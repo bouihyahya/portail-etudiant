@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portail du Groupe — Ressources & Actualités</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23132242'/%3E%3Cpath d='M32 12 L59 25 L32 38 L5 25 Z' fill='%23E7BB3C'/%3E%3Cpath d='M17 29 v9 c0 4.5 6.7 8.5 15 8.5 s15 -4 15 -8.5 v-9' stroke='%23E7BB3C' stroke-width='3.4' fill='none' stroke-linecap='round'/%3E%3Cline x1='55' y1='25' x2='55' y2='43' stroke='%23E7BB3C' stroke-width='3.4' stroke-linecap='round'/%3E%3Ccircle cx='55' cy='46.5' r='2.6' fill='%23E7BB3C'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23132242'/%3E%3Cpath d='M32 12 L59 25 L32 38 L5 25 Z' fill='%23E7BB3C'/%3E%3Cpath d='M17 29 v9 c0 4.5 6.7 8.5 15 8.5 s15 -4 15 -8.5 v-9' stroke='%23E7BB3C' stroke-width='3.4' fill='none' stroke-linecap='round'/%3E%3Cline x1='55' y1='25' x2='55' y2='43' stroke='%23E7BB3C' stroke-width='3.4' stroke-linecap='round'/%3E%3Ccircle cx='55' cy='46.5' r='2.6' fill='%23E7BB3C'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700;9..144,800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#132242;
+    --navy-deep:#0A1428;
+    --blue:#2F5DA8;
+    --blue-soft:#DCE6F5;
+    --gold:#C9A227;
+    --gold-soft:#F3E6BE;
+    --gold-bright:#E7BB3C;
+    --paper:#EEF1F6;
+    --card:#FFFFFF;
+    --ink:#171C28;
+    --ink-soft:#565F73;
+    --line:#DCE1EA;
+    --red-live:#C1272D;
+    --green-ok:#2E7D4F;
+    --shadow-sm:0 2px 6px rgba(15,26,54,.06);
+    --shadow-md:0 10px 24px rgba(15,26,54,.10);
+    --shadow-lg:0 20px 44px rgba(15,26,54,.16);
+    --ease:cubic-bezier(.22,.9,.32,1);
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    line-height:1.5;
+    -webkit-text-size-adjust:100%;
+  }
+  h1,h2,h3,.serif{font-family:'Fraunces',serif;font-weight:600;margin:0;color:var(--navy-deep);}
+  a{color:inherit;text-decoration:none;}
+  button{font-family:inherit;cursor:pointer;}
+  input,select,textarea{font-family:inherit;}
+  :focus-visible{outline:3px solid var(--gold);outline-offset:2px;}
+  img{max-width:100%;}
+
+  /* ---------- TICKER ---------- */
+  .ticker-bar{background:var(--navy-deep);color:#fff;overflow:hidden;white-space:nowrap;display:flex;align-items:center;height:38px;position:relative;z-index:30;}
+  .ticker-label{flex:0 0 auto;background:linear-gradient(135deg,var(--red-live),#8f1b20);color:#fff;font-weight:700;font-size:11px;letter-spacing:.06em;padding:0 14px;height:100%;display:flex;align-items:center;gap:7px;}
+  .live-dot{width:6px;height:6px;border-radius:50%;background:#fff;animation:pulse 1.4s infinite ease-in-out;}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.35;transform:scale(.8);}}
+  .ticker-track-wrap{flex:1 1 auto;overflow:hidden;position:relative;height:100%;min-width:0;
+    mask-image:linear-gradient(90deg,transparent,#000 24px,#000 calc(100% - 24px),transparent);
+    -webkit-mask-image:linear-gradient(90deg,transparent,#000 24px,#000 calc(100% - 24px),transparent);}
+  .ticker-track{display:flex;align-items:center;gap:44px;position:absolute;white-space:nowrap;animation:scroll-left 40s linear infinite;height:100%;padding-left:100%;}
+  .ticker-track span{font-size:12.5px;font-weight:500;opacity:.95;}
+  .ticker-track span b{color:var(--gold-bright);font-weight:700;}
+  @keyframes scroll-left{from{transform:translateX(0);}to{transform:translateX(-100%);}}
+  @media (prefers-reduced-motion: reduce){.ticker-track{animation:none;padding-left:16px;}.live-dot{animation:none;}}
+
+  /* ---------- HEADER / NAV ---------- */
+  header.site{
+    background:linear-gradient(120deg,var(--navy) 0%,#182b52 100%);
+    color:#fff;padding:15px 22px;display:flex;align-items:center;justify-content:space-between;
+    gap:16px;position:sticky;top:0;z-index:40;box-shadow:0 4px 18px rgba(10,20,40,.18);
+  }
+  .brand{display:flex;align-items:center;gap:10px;line-height:1.2;min-width:0;}
+  .brand .logo-dot{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,var(--gold-bright),var(--gold));display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-weight:700;color:var(--navy-deep);font-size:15px;flex:0 0 auto;box-shadow:var(--shadow-sm);}
+  .brand .txt{display:flex;flex-direction:column;min-width:0;}
+  .brand .mark{font-family:'Fraunces',serif;font-weight:700;font-size:18px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .brand .sub{font-size:11px;color:var(--gold-soft);opacity:.85;}
+
+  nav.site-nav{display:flex;gap:6px;flex-wrap:wrap;}
+  nav.site-nav button{
+    position:relative;background:transparent;border:1px solid rgba(255,255,255,.16);color:#EDEFF4;
+    padding:8px 15px;font-size:13.5px;font-weight:500;border-radius:999px;
+    transition:background .2s var(--ease), border-color .2s var(--ease), transform .15s var(--ease);white-space:nowrap;
+  }
+  nav.site-nav button:hover{background:rgba(255,255,255,.09);transform:translateY(-1px);}
+  nav.site-nav button:active{transform:translateY(0) scale(.97);}
+  nav.site-nav button.active{background:linear-gradient(135deg,var(--gold-bright),var(--gold));border-color:transparent;color:var(--navy-deep);font-weight:700;box-shadow:var(--shadow-sm);}
+
+  .menu-toggle{display:none;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);color:#fff;width:38px;height:38px;border-radius:9px;font-size:18px;flex:0 0 auto;transition:background .15s;}
+  .menu-toggle:hover{background:rgba(255,255,255,.16);}
+
+  @media (max-width:720px){
+    nav.site-nav{display:none;position:absolute;top:100%;left:0;right:0;background:var(--navy-deep);flex-direction:column;padding:10px 16px 16px;gap:8px;box-shadow:0 12px 24px rgba(0,0,0,.25);z-index:20;
+      animation:drop-in .22s var(--ease);}
+    nav.site-nav.open{display:flex;}
+    nav.site-nav button{width:100%;text-align:left;padding:12px 14px;}
+    .menu-toggle{display:block;}
+  }
+  @keyframes drop-in{from{opacity:0;transform:translateY(-8px);}to{opacity:1;transform:translateY(0);}}
+
+  main{max-width:1100px;margin:0 auto;padding:0 20px 80px;}
+  @media (min-width:760px){main{padding:0 32px 90px;}}
+
+  /* ---------- REVEAL ANIMATION ---------- */
+  .reveal{opacity:0;transform:translateY(18px);transition:opacity .6s var(--ease), transform .6s var(--ease);}
+  .reveal.in-view{opacity:1;transform:translateY(0);}
+
+  /* ---------- HERO ---------- */
+  .hero{
+    position:relative;overflow:hidden;
+    margin:24px 0 0;padding:52px 32px;border-radius:20px;
+    background:radial-gradient(circle at 85% 12%,#1c3564 0%,var(--navy) 46%,var(--navy-deep) 100%);
+    display:grid;grid-template-columns:1fr;gap:30px;color:#fff;
+    box-shadow:var(--shadow-lg);
+  }
+  .hero::before{
+    content:"";position:absolute;inset:0;opacity:.5;pointer-events:none;
+    background-image:radial-gradient(rgba(255,255,255,.14) 1.4px, transparent 1.4px);
+    background-size:22px 22px;mask-image:linear-gradient(120deg,#000,transparent 70%);
+    -webkit-mask-image:linear-gradient(120deg,#000,transparent 70%);
+  }
+  .hero-inner{position:relative;z-index:1;display:grid;grid-template-columns:1fr;gap:30px;}
+  @media (min-width:820px){.hero{padding:64px 48px;}.hero-inner{grid-template-columns:1.3fr 1fr;align-items:end;}}
+  .hero-eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--gold-bright);margin-bottom:14px;}
+  .hero-eyebrow::before{content:"";width:18px;height:2px;background:var(--gold-bright);border-radius:2px;}
+  .hero h1{font-size:clamp(30px,5.4vw,48px);line-height:1.08;max-width:16ch;color:#fff;}
+  .hero p{color:#C7D0E6;font-size:15.5px;max-width:44ch;margin-top:14px;}
+  .hero-stats{display:flex;flex-wrap:wrap;gap:16px;}
+  @media (min-width:820px){.hero-stats{flex-direction:column;gap:14px;}}
+  .stat{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:14px 18px;backdrop-filter:blur(2px);flex:1 1 130px;transition:transform .25s var(--ease), background .25s;}
+  .stat:hover{transform:translateY(-2px);background:rgba(255,255,255,.1);}
+  .stat .num{font-family:'Fraunces',serif;font-size:28px;font-weight:700;color:var(--gold-bright);display:block;}
+  .stat .label{font-size:12px;color:#B9C3DC;}
+
+  /* ---------- SECTION TITLES ---------- */
+  .section-head{display:flex;align-items:baseline;justify-content:space-between;margin:52px 0 20px;gap:12px;flex-wrap:wrap;}
+  .section-head h2{font-size:24px;}
+  .section-head .see-all{font-size:13.5px;font-weight:600;color:var(--blue);padding-bottom:1px;white-space:nowrap;position:relative;}
+  .section-head .see-all::after{content:"";position:absolute;left:0;right:0;bottom:-2px;height:1px;background:var(--blue);transform:scaleX(1);transform-origin:right;transition:transform .25s var(--ease);}
+  .section-head .see-all:hover::after{transform-origin:left;}
+
+  /* ---------- SUBJECT GRID (cards) ---------- */
+  .subject-grid{display:grid;grid-template-columns:1fr;gap:14px;}
+  @media (min-width:620px){.subject-grid{grid-template-columns:1fr 1fr;}}
+  @media (min-width:980px){.subject-grid{grid-template-columns:1fr 1fr 1fr;}}
+
+  .subject-card{
+    background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;
+    display:flex;flex-direction:column;gap:12px;text-align:left;width:100%;
+    box-shadow:var(--shadow-sm);cursor:pointer;
+    transition:transform .28s var(--ease), box-shadow .28s var(--ease), border-color .28s var(--ease);
+    position:relative;overflow:hidden;
+  }
+  .subject-card::before{
+    content:"";position:absolute;top:0;left:0;right:0;height:3px;
+    background:var(--accent, var(--gold));transform:scaleX(0);transform-origin:left;transition:transform .35s var(--ease);
+  }
+  .subject-card:hover{transform:translateY(-5px);box-shadow:var(--shadow-md);border-color:transparent;}
+  .subject-card:hover::before{transform:scaleX(1);}
+  .subject-card:active{transform:translateY(-2px) scale(.99);}
+  .subj-top{display:flex;align-items:center;gap:12px;}
+  .subj-icon{
+    width:46px;height:46px;border-radius:12px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;
+    font-size:21px;background:var(--accent-soft, var(--gold-soft));transition:transform .3s var(--ease);
+  }
+  .subject-card:hover .subj-icon{transform:rotate(-6deg) scale(1.06);}
+  .subj-code{font-size:11px;font-weight:700;letter-spacing:.05em;color:var(--accent, var(--blue));text-transform:uppercase;}
+  .subj-name{font-size:15.5px;font-weight:700;color:var(--navy-deep);margin-top:2px;line-height:1.25;}
+  .subject-card .desc{font-size:13px;color:var(--ink-soft);line-height:1.45;flex:1;}
+  .subj-meta{display:flex;gap:14px;font-size:12px;color:var(--ink-soft);border-top:1px solid var(--line);padding-top:12px;margin-top:2px;}
+  .subj-meta span{display:flex;align-items:center;gap:5px;}
+  .subj-arrow{position:absolute;top:18px;right:18px;color:var(--line);font-size:16px;transition:transform .3s var(--ease), color .3s var(--ease);}
+  .subject-card:hover .subj-arrow{transform:translateX(3px);color:var(--accent,var(--gold));}
+
+  /* ---------- NEWS LIST ---------- */
+  .news-list{display:flex;flex-direction:column;gap:10px;}
+  .news-item{
+    display:flex;gap:14px;align-items:flex-start;padding:15px 16px;
+    background:var(--card);border:1px solid var(--line);border-radius:12px;
+    transition:transform .22s var(--ease), box-shadow .22s var(--ease), border-color .22s;
+  }
+  .news-item:hover{transform:translateX(3px);box-shadow:var(--shadow-sm);border-color:#CBD5E6;}
+  .news-icon{flex:0 0 auto;width:36px;height:36px;border-radius:10px;background:var(--blue-soft);color:var(--blue);display:flex;align-items:center;justify-content:center;font-size:16px;}
+  .news-item.urgent .news-icon{background:#FBE2E2;color:var(--red-live);}
+  .news-main{flex:1;min-width:0;}
+  .news-top-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:2px;}
+  .news-date{font-size:11.5px;color:var(--ink-soft);font-weight:600;}
+  .news-tag{font-size:10px;font-weight:700;letter-spacing:.03em;background:var(--blue-soft);color:var(--blue);padding:2px 9px;border-radius:999px;}
+  .news-tag.urgent{background:#FBE2E2;color:var(--red-live);}
+  .news-item h3{font-size:14.5px;font-family:'Inter';font-weight:600;color:var(--ink);}
+  .news-item p{margin:4px 0 0;font-size:13.5px;color:var(--ink-soft);}
+
+  /* ---------- SUBJECT PAGE ---------- */
+  .back-link{display:inline-flex;align-items:center;gap:6px;margin-top:26px;font-size:13.5px;font-weight:600;color:var(--blue);background:none;border:none;padding:0;transition:gap .2s;}
+  .back-link:hover{gap:10px;}
+  .subject-header{
+    padding:26px 28px;border-radius:16px;margin-top:16px;
+    background:linear-gradient(120deg,var(--accent-bg,var(--navy)) 0%, var(--navy-deep) 100%);
+    color:#fff;display:flex;align-items:center;gap:16px;flex-wrap:wrap;box-shadow:var(--shadow-md);
+  }
+  .subject-header .subj-icon{width:54px;height:54px;font-size:26px;background:rgba(255,255,255,.16);}
+  .subject-header .htext{flex:1;min-width:200px;}
+  .subject-header .code-badge{font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--gold-bright);text-transform:uppercase;}
+  .subject-header h1{font-size:26px;color:#fff;margin-top:2px;}
+  .subject-header .desc-full{color:#C7D0E6;font-size:14px;margin-top:6px;}
+
+  .resource-cols{display:grid;grid-template-columns:1fr;gap:32px;margin-top:32px;}
+  @media (min-width:760px){.resource-cols{grid-template-columns:1fr 1fr;gap:40px;}}
+
+  .resource-col h2{font-size:16px;display:flex;align-items:center;gap:8px;margin-bottom:14px;}
+  .resource-item{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:13px 15px;margin-bottom:10px;display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;transition:transform .2s var(--ease), box-shadow .2s var(--ease);}
+  .resource-item:hover{transform:translateY(-2px);box-shadow:var(--shadow-sm);}
+  .resource-item .icon{flex:0 0 auto;width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;}
+  .icon.yt{background:linear-gradient(135deg,#E23B41,#A81C21);}
+  .icon.drive{background:linear-gradient(135deg,#4B7FD1,var(--blue));}
+  .icon.pdf{background:linear-gradient(135deg,#233a6b,var(--navy));}
+  .icon.doc{background:linear-gradient(135deg,var(--gold-bright),var(--gold));color:var(--navy-deep);}
+  .resource-item .rtext{flex:1 1 140px;min-width:0;}
+  .resource-item .rtitle{font-size:14px;font-weight:600;color:var(--ink);word-break:break-word;}
+  .resource-item .rmeta{font-size:12px;color:var(--ink-soft);margin-top:2px;}
+  .resource-item a.open{flex:0 0 auto;font-size:12.5px;font-weight:700;color:var(--blue);padding:6px 12px;border-radius:999px;background:var(--blue-soft);transition:background .2s;}
+  .resource-item a.open:hover{background:#C9D8F2;}
+
+  /* ---------- DASHBOARD ---------- */
+  .dash-intro{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--gold);padding:14px 18px;border-radius:10px;font-size:13.5px;color:var(--ink-soft);margin:28px 0 8px;}
+  .dash-tabs{display:flex;gap:8px;margin:22px 0 24px;flex-wrap:wrap;}
+  .dash-tab{padding:9px 17px;border-radius:999px;border:1px solid var(--line);background:var(--card);font-size:13.5px;font-weight:600;color:var(--ink-soft);transition:all .2s var(--ease);}
+  .dash-tab:hover{border-color:var(--navy);}
+  .dash-tab.active{background:var(--navy);border-color:var(--navy);color:#fff;box-shadow:var(--shadow-sm);}
+  .dash-panel{display:none;}
+  .dash-panel.active{display:block;animation:fade-in .3s var(--ease);}
+  @keyframes fade-in{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+
+  .dash-grid{display:grid;grid-template-columns:1fr;gap:28px;}
+  @media (min-width:900px){.dash-grid{grid-template-columns:.9fr 1.1fr;}}
+
+  .form-card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;box-shadow:var(--shadow-sm);}
+  .form-card h3{font-size:15px;margin-bottom:14px;}
+  .field{margin-bottom:12px;}
+  .field label{display:block;font-size:12.5px;font-weight:600;color:var(--ink-soft);margin-bottom:5px;}
+  .field input[type=text],.field input[type=url],.field select,.field textarea{
+    width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font-size:13.5px;color:var(--ink);background:#fbfcfe;
+    transition:border-color .2s, box-shadow .2s;
+  }
+  .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-soft);outline:none;}
+  .field textarea{resize:vertical;min-height:60px;}
+  .field-hint{font-size:12px;color:var(--ink-soft);margin:6px 0 0;line-height:1.4;}
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  @media (max-width:420px){.field-row{grid-template-columns:1fr;}}
+  .checkbox-row{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink-soft);margin-bottom:14px;}
+  .btn-primary{background:linear-gradient(135deg,var(--navy),var(--navy-deep));color:#fff;border:none;padding:11px 20px;border-radius:999px;font-size:13.5px;font-weight:700;box-shadow:var(--shadow-sm);transition:transform .2s var(--ease), box-shadow .2s var(--ease);}
+  .btn-primary:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);}
+  .btn-primary:active{transform:translateY(0) scale(.97);}
+  .btn-secondary{background:#fff;color:var(--ink);border:1px solid var(--line);padding:10px 17px;border-radius:999px;font-size:13.5px;font-weight:600;transition:border-color .2s, transform .2s var(--ease);}
+  .btn-secondary:hover{border-color:var(--navy);transform:translateY(-1px);}
+  .btn-danger{background:none;border:none;color:var(--red-live);font-size:12px;font-weight:700;padding:5px 10px;border-radius:999px;transition:background .2s;}
+  .btn-danger:hover{background:#FBE2E2;}
+  .btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px;}
+
+  .manage-list{display:flex;flex-direction:column;gap:8px;}
+  .manage-row{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:11px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;transition:box-shadow .2s;}
+  .manage-row:hover{box-shadow:var(--shadow-sm);}
+  .manage-row .mtext{flex:1 1 160px;min-width:0;font-size:13.5px;}
+  .manage-row .mtext b{color:var(--navy-deep);}
+  .manage-row .mtext span{display:block;font-size:12px;color:var(--ink-soft);margin-top:2px;}
+
+  .subject-picker{margin-bottom:18px;}
+  .data-io{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0 4px;}
+
+  .toast{
+    position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(10px);
+    background:var(--navy-deep);color:#fff;padding:12px 22px;border-radius:999px;font-size:13.5px;font-weight:600;
+    box-shadow:0 10px 28px rgba(0,0,0,.28);opacity:0;pointer-events:none;transition:opacity .3s var(--ease), transform .3s var(--ease);z-index:50;
+    display:flex;align-items:center;gap:8px;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .toast::before{content:"✨";}
+
+  .lock-overlay{display:none;position:fixed;inset:0;background:rgba(10,20,40,.6);backdrop-filter:blur(2px);align-items:center;justify-content:center;z-index:100;padding:20px;}
+  .lock-overlay.show{display:flex;animation:fade-in .2s var(--ease);}
+  .lock-box{background:#fff;border-radius:16px;padding:28px 26px;max-width:340px;width:100%;box-shadow:var(--shadow-lg);animation:pop-in .25s var(--ease);}
+  @keyframes pop-in{from{opacity:0;transform:scale(.94) translateY(6px);}to{opacity:1;transform:scale(1) translateY(0);}}
+  .lock-box h3{font-size:18px;margin-bottom:6px;}
+  .lock-box p{font-size:13.5px;color:var(--ink-soft);margin:0 0 14px;}
+  .lock-box input{width:100%;padding:11px 13px;border:1px solid var(--line);border-radius:8px;font-size:14px;margin-bottom:8px;transition:border-color .2s;}
+  .lock-box input:focus{border-color:var(--blue);outline:none;}
+  .lock-error{color:var(--red-live) !important;font-size:12.5px !important;}
+
+  footer{border-top:1px solid var(--line);padding:30px 20px;text-align:center;font-size:12.5px;color:var(--ink-soft);margin-top:20px;}
+
+  /* ---------- PAGE TRANSITIONS ---------- */
+  .page{display:none;}
+  .page.active{display:block;animation:page-in .4s var(--ease);}
+  @keyframes page-in{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+</style>
+</head>
+<body>
+
+<div class="ticker-bar">
+  <div class="ticker-label"><span class="live-dot"></span>ACTUS</div>
+  <div class="ticker-track-wrap"><div class="ticker-track" id="tickerTrack"></div></div>
+</div>
+
+<header class="site">
+  <div class="brand">
+    <span class="logo-dot">PG</span>
+    <span class="txt">
+      <span class="mark">Portail du Groupe</span>
+      <span class="sub">Faculté — L2 Sciences</span>
+    </span>
+  </div>
+  <button class="menu-toggle" id="menuToggle" aria-label="Ouvrir le menu">☰</button>
+  <nav class="site-nav" id="siteNav">
+    <button data-nav="home" class="active">Accueil</button>
+    <button data-nav="subjects-full">Matières</button>
+    <button data-nav="news-full">Actualités</button>
+    <button data-nav="dashboard" id="navDashboardBtn" style="display:none;">Tableau de bord</button>
+  </nav>
+</header>
+
+<main>
+
+  <!-- ===== ACCUEIL ===== -->
+  <section class="page active" id="page-home">
+    <div class="hero reveal">
+      <div class="hero-inner">
+        <div>
+          <span class="hero-eyebrow">Espace de la promo</span>
+          <h1>Toutes les ressources du groupe, au même endroit.</h1>
+          <p>Cours vidéo, documents de synthèse et actualités classés par matière — mis à jour par les délégués du groupe.</p>
+        </div>
+        <div class="hero-stats">
+          <div class="stat"><span class="num" data-count="0">0</span><span class="label">matières disponibles</span></div>
+          <div class="stat"><span class="num" data-count="0">0</span><span class="label">vidéos de cours</span></div>
+          <div class="stat"><span class="num" data-count="0">0</span><span class="label">documents & résumés</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-head reveal"><h2>Matières</h2><button class="see-all" data-nav="subjects-full">Voir toutes les matières →</button></div>
+    <div class="subject-grid reveal" id="subjectListHome"></div>
+
+    <div class="section-head reveal"><h2>Dernières actualités</h2><button class="see-all" data-nav="news-full">Voir tout →</button></div>
+    <div class="news-list reveal" id="newsListHome"></div>
+  </section>
+
+  <!-- ===== TOUTES LES MATIERES ===== -->
+  <section class="page" id="page-subjects-full">
+    <div class="section-head" style="margin-top:32px;"><h2>Toutes les matières</h2></div>
+    <div class="subject-grid" id="subjectListFull"></div>
+  </section>
+
+  <!-- ===== DETAIL MATIERE ===== -->
+  <section class="page" id="page-subject-detail">
+    <button class="back-link" data-nav="subjects-full">← Retour aux matières</button>
+    <div class="subject-header" id="subjectDetailHeader"></div>
+    <div class="resource-cols">
+      <div class="resource-col"><h2>🎥 Vidéos de cours</h2><div id="videoList"></div></div>
+      <div class="resource-col"><h2>📄 Documents & résumés</h2><div id="docList"></div></div>
+    </div>
+  </section>
+
+  <!-- ===== ACTUALITES COMPLETES ===== -->
+  <section class="page" id="page-news-full">
+    <div class="section-head" style="margin-top:32px;"><h2>Actualités du groupe</h2></div>
+    <div class="news-list news-full-list" id="newsListFull"></div>
+  </section>
+
+  <!-- ===== TABLEAU DE BORD ===== -->
+  <section class="page" id="page-dashboard">
+    <div class="section-head" style="margin-top:32px;margin-bottom:6px;"><h2>Tableau de bord</h2></div>
+    <p class="dash-intro">
+      Espace réservé — non visible ni accessible depuis le menu public. Utilisez <b>Exporter</b> pour sauvegarder vos ajouts
+      dans un fichier, et <b>Importer</b> pour les recharger la prochaine fois — sinon tout revient au contenu de départ en
+      rafraîchissant la page.
+    </p>
+
+    <div class="data-io">
+      <button class="btn-secondary" id="exportBtn">⬇ Exporter les données</button>
+      <label class="btn-secondary" style="cursor:pointer;">
+        ⬆ Importer un fichier
+        <input type="file" id="importInput" accept="application/json" style="display:none;">
+      </label>
+    </div>
+
+    <div class="dash-tabs">
+      <button class="dash-tab active" data-tab="news">Actualités</button>
+      <button class="dash-tab" data-tab="lessons">Matières & leçons</button>
+    </div>
+
+    <!-- Onglet Actualités -->
+    <div class="dash-panel active" id="panel-news">
+      <div class="dash-grid">
+        <div class="form-card">
+          <h3>Ajouter une actualité</h3>
+          <form id="newsForm">
+            <div class="field-row">
+              <div class="field"><label for="newsDate">Date</label><input type="text" id="newsDate" placeholder="ex. 09 sept." required></div>
+              <div class="field"><label for="newsTag">Catégorie</label><input type="text" id="newsTag" placeholder="ex. Cours, Réunion..." required></div>
+            </div>
+            <div class="field"><label for="newsTitle">Titre</label><input type="text" id="newsTitle" required></div>
+            <div class="field"><label for="newsDesc">Description</label><textarea id="newsDesc" required></textarea></div>
+            <div class="checkbox-row"><input type="checkbox" id="newsUrgent"><label for="newsUrgent">Marquer comme urgent</label></div>
+            <button type="submit" class="btn-primary">Publier l'actualité</button>
+          </form>
+        </div>
+        <div>
+          <h3 style="font-size:15px;margin-bottom:12px;">Actualités publiées</h3>
+          <div class="manage-list" id="newsManageList"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Onglet Matières & leçons -->
+    <div class="dash-panel" id="panel-lessons">
+      <div class="form-card" style="margin-bottom:24px;">
+        <h3>Ajouter une matière</h3>
+        <form id="subjectForm">
+          <div class="field-row">
+            <div class="field"><label for="subjCode">Code</label><input type="text" id="subjCode" placeholder="ex. INF301" required></div>
+            <div class="field"><label for="subjName">Nom de la matière</label><input type="text" id="subjName" required></div>
+          </div>
+          <div class="field"><label for="subjDesc">Description courte</label><input type="text" id="subjDesc" required></div>
+          <button type="submit" class="btn-primary">Ajouter la matière</button>
+        </form>
+      </div>
+
+      <div class="form-card">
+        <h3>Ajouter une leçon (vidéo ou document)</h3>
+        <div class="field subject-picker">
+          <label for="lessonSubject">Matière concernée</label>
+          <select id="lessonSubject"></select>
+        </div>
+        <div class="field-row">
+          <div class="field"><label for="lessonType">Type de ressource</label>
+            <select id="lessonType">
+              <option value="video">Vidéo de cours</option>
+              <option value="doc">Document / résumé</option>
+            </select>
+          </div>
+          <div class="field" id="sourceField"><label for="lessonSource">Source</label>
+            <select id="lessonSource"><option>YouTube</option><option>Drive</option></select>
+          </div>
+          <div class="field" id="typeField" style="display:none;"><label for="lessonDocType">Format</label>
+            <select id="lessonDocType"><option>PDF</option><option>DOCX</option></select>
+          </div>
+        </div>
+        <div class="field"><label for="lessonTitle">Titre</label><input type="text" id="lessonTitle" required></div>
+        <div class="field">
+          <label for="lessonLink">Lien (URL)</label>
+          <input type="url" id="lessonLink" placeholder="https://..." required>
+          <p class="field-hint">Ce site ne stocke pas les fichiers. Téléversez d'abord le PDF/la vidéo sur Google Drive (ou YouTube), rendez-le accessible "par lien", puis collez ce lien ici.</p>
+        </div>
+        <button type="button" class="btn-primary" id="addLessonBtn">Ajouter la ressource</button>
+      </div>
+
+      <h3 style="font-size:15px;margin:24px 0 12px;">Contenu de la matière sélectionnée</h3>
+      <div class="manage-list" id="lessonManageList"></div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  Portail réalisé par et pour le groupe.
+  <button id="adminLink" style="background:none;border:none;color:var(--ink-soft);font-size:12px;text-decoration:underline;padding:0;margin-left:6px;cursor:pointer;">Accès délégué</button>
+</footer>
+
+<div class="lock-overlay" id="lockOverlay">
+  <div class="lock-box">
+    <h3>Accès réservé</h3>
+    <p>Entrez le code délégué pour accéder au tableau de bord.</p>
+    <input type="password" id="lockCodeInput" placeholder="Code d'accès" autocomplete="off">
+    <p class="lock-error" id="lockError" style="display:none;">Code incorrect, réessayez.</p>
+    <div class="btn-row">
+      <button class="btn-primary" id="lockSubmit">Valider</button>
+      <button class="btn-secondary" id="lockCancel">Annuler</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============ DONNÉES (état en mémoire) ============ */
+const ICON_PALETTE = [
+  {icon:"🎲", accent:"#2F5DA8", soft:"#DCE6F5"},
+  {icon:"📈", accent:"#1E7F72", soft:"#DCEFEA"},
+  {icon:"🇫🇷", accent:"#B4562F", soft:"#F5E1D6"},
+  {icon:"🧭", accent:"#6B4FA0", soft:"#E6DEF2"},
+  {icon:"👥", accent:"#B02E52", soft:"#F5DBE3"},
+  {icon:"🧾", accent:"#2F6FA8", soft:"#DCE9F5"},
+  {icon:"⚖️", accent:"#3F7D3D", soft:"#DEEEDD"}
+];
+const NEWS_ICONS = { "Urgent":"❗", "Cours":"📘", "Réunion":"🗓️", "Rentrée":"🎓", "Rattrapage":"🔁" };
+function newsIcon(tag){ return NEWS_ICONS[tag] || "📰"; }
+
+let subjects = [
+  { id:"probabilite", code:"PROB101", name:"Probabilité", desc:"Lois de probabilité, variables aléatoires et applications statistiques.", videos:[], docs:[] },
+  { id:"eco-maroc", code:"ECO-MA", name:"Économie du Maroc", desc:"Structures économiques, politiques publiques et enjeux de développement du pays.", videos:[], docs:[] },
+  { id:"francais", code:"LANG-FR", name:"Langues étrangères : Français", desc:"Expression écrite et orale, communication professionnelle en français.", videos:[], docs:[] },
+  { id:"management", code:"MNG101", name:"Management des Organisations", desc:"Fonctions, structures et pratiques de management dans l'entreprise.", videos:[], docs:[] },
+  { id:"sociologie", code:"SOC101", name:"Sociologie des Organisations", desc:"Comportements, pouvoir et dynamiques sociales au sein des organisations.", videos:[], docs:[] },
+  { id:"compta-analytique", code:"CAG101", name:"Comptabilité Analytique de Gestion", desc:"Calcul et analyse des coûts pour la prise de décision en gestion.", videos:[], docs:[] },
+  { id:"droit-entreprise", code:"DRT101", name:"Droit de l'Entreprise", desc:"Cadre juridique des affaires, contrats et statut des sociétés.", videos:[], docs:[] }
+];
+
+let news = [
+  { id:1, date:"09 sept.", tag:"Urgent", urgent:true, title:"Report de l'examen d'Algorithmique au 15 octobre", desc:"L'examen prévu le 10 octobre est déplacé au 15 octobre, même salle et même horaire." },
+  { id:2, date:"08 sept.", tag:"Cours", urgent:false, title:"Nouveau support ajouté pour Bases de Données", desc:"Le cahier de requêtes SQL est maintenant disponible dans la section Bases de Données." },
+  { id:3, date:"06 sept.", tag:"Réunion", urgent:false, title:"Réunion du groupe ce vendredi à 14h", desc:"Ordre du jour : organisation des révisions et répartition des résumés de cours." },
+  { id:4, date:"03 sept.", tag:"Rentrée", urgent:false, title:"Rentrée du second semestre le 20 octobre", desc:"L'emploi du temps définitif sera partagé une semaine avant la reprise." },
+  { id:5, date:"01 sept.", tag:"Rattrapage", urgent:false, title:"Vidéo de rattrapage disponible — Physique, chapitre 3", desc:"Pour les personnes absentes à la séance du 28 août, la vidéo est en ligne." },
+  { id:6, date:"29 août", tag:"Cours", urgent:false, title:"Fiches résumées d'Analyse mathématique mises à jour", desc:"Les fiches couvrent désormais les chapitres 1 à 3 avec exemples corrigés." }
+];
+
+let newsIdCounter = 7;
+let currentSubjectDetail = null;
+let currentLessonSubjectId = subjects[0].id;
+
+function subjectStyle(index){ return ICON_PALETTE[index % ICON_PALETTE.length]; }
+
+/* ============ HELPERS ============ */
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(showToast._tm);
+  showToast._tm = setTimeout(()=>t.classList.remove('show'), 2200);
+}
+
+/* ============ RENDU — PUBLIC ============ */
+function subjectCard(s, index){
+  const st = subjectStyle(index);
+  return `<button class="subject-card" data-open-subject="${s.id}" style="--accent:${st.accent};--accent-soft:${st.soft};">
+    <span class="subj-arrow">→</span>
+    <div class="subj-top">
+      <span class="subj-icon">${st.icon}</span>
+      <div><div class="subj-code">${s.code}</div><div class="subj-name">${s.name}</div></div>
+    </div>
+    <p class="desc">${s.desc}</p>
+    <div class="subj-meta"><span>🎥 ${s.videos.length} vidéos</span><span>📄 ${s.docs.length} docs</span></div>
+  </button>`;
+}
+
+function newsItem(n, full){
+  const shortDesc = n.desc.length>90 ? n.desc.slice(0,90)+'…' : n.desc;
+  return `<div class="news-item${n.urgent?' urgent':''}">
+    <span class="news-icon">${newsIcon(n.tag)}</span>
+    <div class="news-main">
+      <div class="news-top-row"><span class="news-date">${n.date}</span><span class="news-tag${n.urgent?' urgent':''}">${n.tag}</span></div>
+      <h3>${n.title}</h3>
+      <p>${full ? n.desc : shortDesc}</p>
+    </div>
+  </div>`;
+}
+
+function animateCount(el, target){
+  const start = 0, duration = 900, startTime = performance.now();
+  function tick(now){
+    const p = Math.min(1, (now-startTime)/duration);
+    const eased = 1 - Math.pow(1-p, 3);
+    el.textContent = Math.round(start + (target-start)*eased);
+    if(p<1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+function renderHome(){
+  document.getElementById('subjectListHome').innerHTML = subjects.slice(0,6).map((s,i)=>subjectCard(s,i)).join('');
+  document.getElementById('newsListHome').innerHTML = news.slice(0,4).map(n=>newsItem(n,false)).join('');
+  const nums = document.querySelectorAll('.hero-stats .num');
+  const values = [subjects.length, subjects.reduce((a,s)=>a+s.videos.length,0), subjects.reduce((a,s)=>a+s.docs.length,0)];
+  nums.forEach((el,i)=>animateCount(el, values[i]));
+}
+function renderSubjectsFull(){ document.getElementById('subjectListFull').innerHTML = subjects.map((s,i)=>subjectCard(s,i)).join(''); }
+function renderNewsFull(){ document.getElementById('newsListFull').innerHTML = news.map(n=>newsItem(n,true)).join(''); }
+
+function renderTicker(){
+  const items = news.map(n => `<span>${newsIcon(n.tag)} <b>${n.tag.toUpperCase()}</b> — ${n.title}</span>`);
+  const track = document.getElementById('tickerTrack');
+  track.innerHTML = items.length ? items.concat(items).join('<span style="opacity:.4">&nbsp;&nbsp;&nbsp;</span>') : '<span>Aucune actualité pour le moment.</span>';
+}
+
+function openSubject(id){
+  const idx = subjects.findIndex(x=>x.id===id);
+  const s = subjects[idx];
+  if(!s) return;
+  currentSubjectDetail = id;
+  const st = subjectStyle(idx);
+  document.getElementById('subjectDetailHeader').innerHTML = `
+    <span class="subj-icon">${st.icon}</span>
+    <div class="htext">
+      <div class="code-badge">${s.code}</div>
+      <h1>${s.name}</h1>
+      <div class="desc-full">${s.desc}</div>
+    </div>`;
+  document.getElementById('subjectDetailHeader').style.setProperty('--accent-bg', st.accent);
+
+  document.getElementById('videoList').innerHTML = s.videos.length ? s.videos.map(v=>`
+    <div class="resource-item">
+      <span class="icon ${v.src==='YouTube'?'yt':'drive'}">${v.src==='YouTube'?'▶':'⬆'}</span>
+      <div class="rtext"><div class="rtitle">${v.title}</div><div class="rmeta">${v.src}</div></div>
+      <a class="open" href="${v.link}" target="_blank" rel="noopener">Regarder</a>
+    </div>`).join('') : `<p style="color:var(--ink-soft);font-size:14px;">Aucune vidéo pour le moment.</p>`;
+
+  document.getElementById('docList').innerHTML = s.docs.length ? s.docs.map(d=>`
+    <div class="resource-item">
+      <span class="icon ${d.type==='PDF'?'pdf':'doc'}">${d.type}</span>
+      <div class="rtext"><div class="rtitle">${d.title}</div><div class="rmeta">${d.type}</div></div>
+      <a class="open" href="${d.link}" target="_blank" rel="noopener">Ouvrir</a>
+    </div>`).join('') : `<p style="color:var(--ink-soft);font-size:14px;">Aucun document pour le moment.</p>`;
+
+  showPage('subject-detail');
+}
+
+function refreshAllPublic(){
+  renderHome(); renderSubjectsFull(); renderNewsFull(); renderTicker();
+  if(currentSubjectDetail) openSubject(currentSubjectDetail);
+}
+
+/* ============ RENDU — DASHBOARD ============ */
+function renderNewsManageList(){
+  const list = document.getElementById('newsManageList');
+  list.innerHTML = news.map(n => `
+    <div class="manage-row">
+      <div class="mtext"><b>${n.date} — ${n.title}</b><span>${n.tag}${n.urgent?' · urgent':''}</span></div>
+      <button class="btn-danger" data-del-news="${n.id}">Supprimer</button>
+    </div>`).join('') || `<p style="color:var(--ink-soft);font-size:13.5px;">Aucune actualité.</p>`;
+}
+
+function renderLessonSubjectPicker(){
+  const sel = document.getElementById('lessonSubject');
+  sel.innerHTML = subjects.map(s=>`<option value="${s.id}" ${s.id===currentLessonSubjectId?'selected':''}>${s.code} — ${s.name}</option>`).join('');
+}
+
+function renderLessonManageList(){
+  const s = subjects.find(x=>x.id===currentLessonSubjectId);
+  const list = document.getElementById('lessonManageList');
+  if(!s){ list.innerHTML=''; return; }
+  const videoRows = s.videos.map((v,i)=>`
+    <div class="manage-row">
+      <div class="mtext"><b>🎥 ${v.title}</b><span>${v.src}</span></div>
+      <button class="btn-danger" data-del-video="${i}">Supprimer</button>
+    </div>`).join('');
+  const docRows = s.docs.map((d,i)=>`
+    <div class="manage-row">
+      <div class="mtext"><b>📄 ${d.title}</b><span>${d.type}</span></div>
+      <button class="btn-danger" data-del-doc="${i}">Supprimer</button>
+    </div>`).join('');
+  list.innerHTML = (videoRows+docRows) || `<p style="color:var(--ink-soft);font-size:13.5px;">Aucune ressource pour cette matière.</p>`;
+}
+
+function refreshDashboard(){
+  renderNewsManageList();
+  renderLessonSubjectPicker();
+  renderLessonManageList();
+}
+
+/* ============ SCROLL REVEAL ============ */
+const revealObserver = new IntersectionObserver((entries)=>{
+  entries.forEach(entry=>{
+    if(entry.isIntersecting){ entry.target.classList.add('in-view'); revealObserver.unobserve(entry.target); }
+  });
+}, {threshold:0.12});
+function observeReveals(){
+  document.querySelectorAll('.page.active .reveal').forEach((el,i)=>{
+    if(!el.classList.contains('in-view')){
+      el.style.transitionDelay = (i*70)+'ms';
+      revealObserver.observe(el);
+    }
+  });
+}
+
+/* ============ NAVIGATION ============ */
+function showPage(name){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  document.querySelectorAll('nav.site-nav button').forEach(b=>{
+    b.classList.toggle('active', b.dataset.nav === name || (name==='subject-detail' && b.dataset.nav==='subjects-full'));
+  });
+  document.getElementById('siteNav').classList.remove('open');
+  window.scrollTo({top:0, behavior:'smooth'});
+  observeReveals();
+}
+
+document.addEventListener('click', (e)=>{
+  const navBtn = e.target.closest('[data-nav]');
+  if(navBtn){ showPage(navBtn.dataset.nav); if(navBtn.dataset.nav==='dashboard') refreshDashboard(); return; }
+
+  const subjBtn = e.target.closest('[data-open-subject]');
+  if(subjBtn){ openSubject(subjBtn.dataset.openSubject); return; }
+
+  const tabBtn = e.target.closest('.dash-tab');
+  if(tabBtn){
+    document.querySelectorAll('.dash-tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.dash-panel').forEach(p=>p.classList.remove('active'));
+    tabBtn.classList.add('active');
+    document.getElementById('panel-'+tabBtn.dataset.tab).classList.add('active');
+    return;
+  }
+
+  const delNews = e.target.closest('[data-del-news]');
+  if(delNews){
+    news = news.filter(n=>n.id != delNews.dataset.delNews);
+    renderNewsManageList(); refreshAllPublic();
+    showToast('Actualité supprimée.');
+    return;
+  }
+
+  const delVideo = e.target.closest('[data-del-video]');
+  if(delVideo){
+    const s = subjects.find(x=>x.id===currentLessonSubjectId);
+    s.videos.splice(Number(delVideo.dataset.delVideo),1);
+    renderLessonManageList(); refreshAllPublic();
+    showToast('Vidéo supprimée.');
+    return;
+  }
+  const delDoc = e.target.closest('[data-del-doc]');
+  if(delDoc){
+    const s = subjects.find(x=>x.id===currentLessonSubjectId);
+    s.docs.splice(Number(delDoc.dataset.delDoc),1);
+    renderLessonManageList(); refreshAllPublic();
+    showToast('Document supprimé.');
+    return;
+  }
+});
+
+document.getElementById('menuToggle').addEventListener('click', ()=>{
+  document.getElementById('siteNav').classList.toggle('open');
+});
+
+/* ============ ACCÈS DÉLÉGUÉ (protection basique côté client) ============
+   ⚠️ Ce code est visible par quiconque ouvre le fichier source — ce n'est pas
+   une vraie sécurité, juste un moyen d'empêcher les visiteurs de tomber sur le
+   tableau de bord par hasard. Changez le mot de passe ci-dessous si besoin. */
+const DELEGUE_CODE = "delegue2026";
+let dashboardUnlocked = false;
+
+const lockOverlay = document.getElementById('lockOverlay');
+const lockInput = document.getElementById('lockCodeInput');
+const lockError = document.getElementById('lockError');
+
+document.getElementById('adminLink').addEventListener('click', ()=>{
+  lockError.style.display = 'none';
+  lockInput.value = '';
+  lockOverlay.classList.add('show');
+  lockInput.focus();
+});
+document.getElementById('lockCancel').addEventListener('click', ()=> lockOverlay.classList.remove('show'));
+lockOverlay.addEventListener('click', (e)=>{ if(e.target === lockOverlay) lockOverlay.classList.remove('show'); });
+
+function tryUnlock(){
+  if(lockInput.value === DELEGUE_CODE){
+    dashboardUnlocked = true;
+    document.getElementById('navDashboardBtn').style.display = '';
+    lockOverlay.classList.remove('show');
+    showPage('dashboard');
+    refreshDashboard();
+    showToast('Accès délégué activé.');
+  } else {
+    lockError.style.display = 'block';
+  }
+}
+document.getElementById('lockSubmit').addEventListener('click', tryUnlock);
+lockInput.addEventListener('keydown', (e)=>{ if(e.key === 'Enter') tryUnlock(); });
+
+document.getElementById('lessonSubject').addEventListener('change', (e)=>{
+  currentLessonSubjectId = e.target.value;
+  renderLessonManageList();
+});
+
+document.getElementById('lessonType').addEventListener('change', (e)=>{
+  const isVideo = e.target.value === 'video';
+  document.getElementById('sourceField').style.display = isVideo ? '' : 'none';
+  document.getElementById('typeField').style.display = isVideo ? 'none' : '';
+});
+
+/* ============ FORMULAIRES ============ */
+document.getElementById('newsForm').addEventListener('submit', (e)=>{
+  e.preventDefault();
+  news.unshift({
+    id: newsIdCounter++,
+    date: document.getElementById('newsDate').value.trim(),
+    tag: document.getElementById('newsTag').value.trim(),
+    urgent: document.getElementById('newsUrgent').checked,
+    title: document.getElementById('newsTitle').value.trim(),
+    desc: document.getElementById('newsDesc').value.trim()
+  });
+  e.target.reset();
+  renderNewsManageList(); refreshAllPublic();
+  showToast('Actualité publiée.');
+});
+
+document.getElementById('subjectForm').addEventListener('submit', (e)=>{
+  e.preventDefault();
+  const code = document.getElementById('subjCode').value.trim();
+  const name = document.getElementById('subjName').value.trim();
+  const desc = document.getElementById('subjDesc').value.trim();
+  const id = name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'') || ('matiere-'+Date.now());
+  subjects.push({ id, code, name, desc, videos:[], docs:[] });
+  currentLessonSubjectId = id;
+  e.target.reset();
+  renderLessonSubjectPicker(); renderLessonManageList(); refreshAllPublic();
+  showToast('Matière ajoutée.');
+});
+
+document.getElementById('addLessonBtn').addEventListener('click', ()=>{
+  const s = subjects.find(x=>x.id===currentLessonSubjectId);
+  const title = document.getElementById('lessonTitle').value.trim();
+  const link = document.getElementById('lessonLink').value.trim();
+  if(!s || !title || !link){ showToast('Merci de remplir le titre et le lien.'); return; }
+  if(document.getElementById('lessonType').value === 'video'){
+    s.videos.push({ title, src: document.getElementById('lessonSource').value, link });
+  } else {
+    s.docs.push({ title, type: document.getElementById('lessonDocType').value, link });
+  }
+  document.getElementById('lessonTitle').value = '';
+  document.getElementById('lessonLink').value = '';
+  renderLessonManageList(); refreshAllPublic();
+  showToast('Ressource ajoutée.');
+});
+
+/* ============ EXPORT / IMPORT ============ */
+document.getElementById('exportBtn').addEventListener('click', ()=>{
+  const data = JSON.stringify({subjects, news, newsIdCounter}, null, 2);
+  const blob = new Blob([data], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'portail-donnees.json'; a.click();
+  URL.revokeObjectURL(url);
+  showToast('Fichier exporté.');
+});
+
+document.getElementById('importInput').addEventListener('change', (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = (evt)=>{
+    try{
+      const data = JSON.parse(evt.target.result);
+      if(!data.subjects || !data.news) throw new Error('format invalide');
+      subjects = data.subjects; news = data.news; newsIdCounter = data.newsIdCounter || (news.length+1);
+      currentLessonSubjectId = subjects[0] ? subjects[0].id : null;
+      refreshAllPublic(); refreshDashboard();
+      showToast('Données importées.');
+    }catch(err){
+      showToast('Fichier invalide.');
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+});
+
+/* ============ INIT ============ */
+refreshAllPublic();
+observeReveals();
+</script>
+
+</body>
+</html>
