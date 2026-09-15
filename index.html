@@ -2,6 +2,8 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://firestore.googleapis.com https://www.gstatic.com https://*.googleapis.com; frame-ancestors 'self';">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Portail du Groupe — Ressources & Actualités</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23132242'/%3E%3Cpath d='M32 12 L59 25 L32 38 L5 25 Z' fill='%23E7BB3C'/%3E%3Cpath d='M17 29 v9 c0 4.5 6.7 8.5 15 8.5 s15 -4 15 -8.5 v-9' stroke='%23E7BB3C' stroke-width='3.4' fill='none' stroke-linecap='round'/%3E%3Cline x1='55' y1='25' x2='55' y2='43' stroke='%23E7BB3C' stroke-width='3.4' stroke-linecap='round'/%3E%3Ccircle cx='55' cy='46.5' r='2.6' fill='%23E7BB3C'/%3E%3C/svg%3E">
@@ -9,6 +11,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700;9..144,800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/bcryptjs@3.0.3/umd/index.js"></script>
 <style>
   :root{
     --navy:#132242;
@@ -614,6 +617,25 @@ function startSync(){
 
 function subjectStyle(index){ return ICON_PALETTE[index % ICON_PALETTE.length]; }
 
+/* ============ SÉCURITÉ : échappement et validation ============
+   Tout texte fourni via le tableau de bord (titres, descriptions, liens)
+   passe par ici avant d'être inséré dans la page, pour empêcher qu'un
+   contenu malveillant (ex. une balise script imbriquée dans un titre) ne
+   s'exécute chez les autres visiteurs. */
+function escapeHtml(str){
+  return String(str ?? '').replace(/[&<>"']/g, ch => ({
+    '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
+  }[ch]));
+}
+function safeUrl(url){
+  const u = String(url ?? '').trim();
+  // N'autorise que les liens http(s), les liens relatifs vers le dépôt (ex. videos/x.mp4), ou "#".
+  if(/^https?:\/\//i.test(u)) return u;
+  if(u === '#' || u === '') return '#';
+  if(/^[a-z0-9_\-./]+$/i.test(u) && !u.startsWith('//')) return u;
+  return '#';
+}
+
 /* ============ HELPERS ============ */
 function showToast(msg){
   const t = document.getElementById('toast');
@@ -626,25 +648,25 @@ function showToast(msg){
 /* ============ RENDU — PUBLIC ============ */
 function subjectCard(s, index){
   const st = subjectStyle(index);
-  return `<button class="subject-card" data-open-subject="${s.id}" style="--accent:${st.accent};--accent-soft:${st.soft};">
+  return `<button class="subject-card" data-open-subject="${escapeHtml(s.id)}" style="--accent:${st.accent};--accent-soft:${st.soft};">
     <span class="subj-arrow">→</span>
     <div class="subj-top">
       <span class="subj-icon">${st.icon}</span>
-      <div><div class="subj-code">${s.code}</div><div class="subj-name">${s.name}</div></div>
+      <div><div class="subj-code">${escapeHtml(s.code)}</div><div class="subj-name">${escapeHtml(s.name)}</div></div>
     </div>
-    <p class="desc">${s.desc}</p>
+    <p class="desc">${escapeHtml(s.desc)}</p>
     <div class="subj-meta"><span>🎥 ${s.videos.length} vidéos</span><span>📄 ${s.docs.length} docs</span></div>
   </button>`;
 }
 
 function newsItem(n, full){
-  const shortDesc = n.desc.length>90 ? n.desc.slice(0,90)+'…' : n.desc;
+  const shortDescRaw = n.desc.length>90 ? n.desc.slice(0,90)+'…' : n.desc;
   return `<div class="news-item${n.urgent?' urgent':''}">
     <span class="news-icon">${newsIcon(n.tag)}</span>
     <div class="news-main">
-      <div class="news-top-row"><span class="news-date">${n.date}</span><span class="news-tag${n.urgent?' urgent':''}">${n.tag}</span></div>
-      <h3>${n.title}</h3>
-      <p>${full ? n.desc : shortDesc}</p>
+      <div class="news-top-row"><span class="news-date">${escapeHtml(n.date)}</span><span class="news-tag${n.urgent?' urgent':''}">${escapeHtml(n.tag)}</span></div>
+      <h3>${escapeHtml(n.title)}</h3>
+      <p>${escapeHtml(full ? n.desc : shortDescRaw)}</p>
     </div>
   </div>`;
 }
@@ -671,46 +693,49 @@ function renderSubjectsFull(){ document.getElementById('subjectListFull').innerH
 function renderNewsFull(){ document.getElementById('newsListFull').innerHTML = news.map(n=>newsItem(n,true)).join(''); }
 
 function renderTicker(){
-  const items = news.map(n => `<span>${newsIcon(n.tag)} <b>${n.tag.toUpperCase()}</b> — ${n.title}</span>`);
+  const items = news.map(n => `<span>${newsIcon(n.tag)} <b>${escapeHtml(n.tag.toUpperCase())}</b> — ${escapeHtml(n.title)}</span>`);
   const track = document.getElementById('tickerTrack');
   track.innerHTML = items.length ? items.concat(items).join('<span style="opacity:.4">&nbsp;&nbsp;&nbsp;</span>') : '<span>Aucune actualité pour le moment.</span>';
 }
 
-function openSubject(id){
+function renderSubjectDetailContent(id){
   const idx = subjects.findIndex(x=>x.id===id);
   const s = subjects[idx];
   if(!s) return;
-  currentSubjectDetail = id;
   const st = subjectStyle(idx);
   document.getElementById('subjectDetailHeader').innerHTML = `
     <span class="subj-icon">${st.icon}</span>
     <div class="htext">
-      <div class="code-badge">${s.code}</div>
-      <h1>${s.name}</h1>
-      <div class="desc-full">${s.desc}</div>
+      <div class="code-badge">${escapeHtml(s.code)}</div>
+      <h1>${escapeHtml(s.name)}</h1>
+      <div class="desc-full">${escapeHtml(s.desc)}</div>
     </div>`;
   document.getElementById('subjectDetailHeader').style.setProperty('--accent-bg', st.accent);
 
   document.getElementById('videoList').innerHTML = s.videos.length ? s.videos.map(v=>`
     <div class="resource-item">
       <span class="icon ${v.src==='YouTube'?'yt':v.src==='Drive'?'drive':'file'}">${v.src==='YouTube'?'▶':v.src==='Drive'?'⬆':'🎬'}</span>
-      <div class="rtext"><div class="rtitle">${v.title}</div><div class="rmeta">${v.src}</div></div>
-      <a class="open" href="${v.link}" target="_blank" rel="noopener">Regarder</a>
+      <div class="rtext"><div class="rtitle">${escapeHtml(v.title)}</div><div class="rmeta">${escapeHtml(v.src)}</div></div>
+      <a class="open" href="${escapeHtml(safeUrl(v.link))}" target="_blank" rel="noopener noreferrer">Regarder</a>
     </div>`).join('') : `<p style="color:var(--ink-soft);font-size:14px;">Aucune vidéo pour le moment.</p>`;
 
   document.getElementById('docList').innerHTML = s.docs.length ? s.docs.map(d=>`
     <div class="resource-item">
-      <span class="icon ${d.type==='PDF'?'pdf':'doc'}">${d.type}</span>
-      <div class="rtext"><div class="rtitle">${d.title}</div><div class="rmeta">${d.type}</div></div>
-      <a class="open" href="${d.link}" target="_blank" rel="noopener">Ouvrir</a>
+      <span class="icon ${d.type==='PDF'?'pdf':'doc'}">${escapeHtml(d.type)}</span>
+      <div class="rtext"><div class="rtitle">${escapeHtml(d.title)}</div><div class="rmeta">${escapeHtml(d.type)}</div></div>
+      <a class="open" href="${escapeHtml(safeUrl(d.link))}" target="_blank" rel="noopener noreferrer">Ouvrir</a>
     </div>`).join('') : `<p style="color:var(--ink-soft);font-size:14px;">Aucun document pour le moment.</p>`;
+}
 
+function openSubject(id){
+  currentSubjectDetail = id;
+  renderSubjectDetailContent(id);
   showPage('subject-detail');
 }
 
 function refreshAllPublic(){
   renderHome(); renderSubjectsFull(); renderNewsFull(); renderTicker();
-  if(currentSubjectDetail) openSubject(currentSubjectDetail);
+  if(currentSubjectDetail) renderSubjectDetailContent(currentSubjectDetail);
 }
 
 /* ============ RENDU — DASHBOARD ============ */
@@ -718,14 +743,14 @@ function renderNewsManageList(){
   const list = document.getElementById('newsManageList');
   list.innerHTML = news.map(n => `
     <div class="manage-row">
-      <div class="mtext"><b>${n.date} — ${n.title}</b><span>${n.tag}${n.urgent?' · urgent':''}</span></div>
+      <div class="mtext"><b>${escapeHtml(n.date)} — ${escapeHtml(n.title)}</b><span>${escapeHtml(n.tag)}${n.urgent?' · urgent':''}</span></div>
       <button class="btn-danger" data-del-news="${n.id}">Supprimer</button>
     </div>`).join('') || `<p style="color:var(--ink-soft);font-size:13.5px;">Aucune actualité.</p>`;
 }
 
 function renderLessonSubjectPicker(){
   const sel = document.getElementById('lessonSubject');
-  sel.innerHTML = subjects.map(s=>`<option value="${s.id}" ${s.id===currentLessonSubjectId?'selected':''}>${s.code} — ${s.name}</option>`).join('');
+  sel.innerHTML = subjects.map(s=>`<option value="${escapeHtml(s.id)}" ${s.id===currentLessonSubjectId?'selected':''}>${escapeHtml(s.code)} — ${escapeHtml(s.name)}</option>`).join('');
 }
 
 function renderLessonManageList(){
@@ -734,12 +759,12 @@ function renderLessonManageList(){
   if(!s){ list.innerHTML=''; return; }
   const videoRows = s.videos.map((v,i)=>`
     <div class="manage-row">
-      <div class="mtext"><b>🎥 ${v.title}</b><span>${v.src}</span></div>
+      <div class="mtext"><b>🎥 ${escapeHtml(v.title)}</b><span>${escapeHtml(v.src)}</span></div>
       <button class="btn-danger" data-del-video="${i}">Supprimer</button>
     </div>`).join('');
   const docRows = s.docs.map((d,i)=>`
     <div class="manage-row">
-      <div class="mtext"><b>📄 ${d.title}</b><span>${d.type}</span></div>
+      <div class="mtext"><b>📄 ${escapeHtml(d.title)}</b><span>${escapeHtml(d.type)}</span></div>
       <button class="btn-danger" data-del-doc="${i}">Supprimer</button>
     </div>`).join('');
   list.innerHTML = (videoRows+docRows) || `<p style="color:var(--ink-soft);font-size:13.5px;">Aucune ressource pour cette matière.</p>`;
@@ -824,8 +849,11 @@ document.getElementById('menuToggle').addEventListener('click', ()=>{
   document.getElementById('siteNav').classList.toggle('open');
 });
 
-
-const DELEGUE_CODE_HASH = "$2b$10$9zV6PxjrP9nftPwKx/9Lbuxhkx6QJWpAkwLWkoVn9ekUlB2AB/Zfq"; 
+/* ============ ACCÈS DÉLÉGUÉ (protection basique côté client) ============
+   ⚠️ Ce code est visible par quiconque ouvre le fichier source — ce n'est pas
+   une vraie sécurité, juste un moyen d'empêcher les visiteurs de tomber sur le
+   tableau de bord par hasard. Changez le mot de passe ci-dessous si besoin. */
+const DELEGUE_CODE_HASH = "$2b$10$9zV6PxjrP9nftPwKx/9Lbuxhkx6QJWpAkwLWkoVn9ekUlB2AB/Zfq"; // hash du code "delegue2026"
 let dashboardUnlocked = false;
 
 const lockOverlay = document.getElementById('lockOverlay');
@@ -842,7 +870,7 @@ document.getElementById('lockCancel').addEventListener('click', ()=> lockOverlay
 lockOverlay.addEventListener('click', (e)=>{ if(e.target === lockOverlay) lockOverlay.classList.remove('show'); });
 
 function tryUnlock(){
-  if(lockInput.value === DELEGUE_CODE){
+  if(window.bcrypt && bcrypt.compareSync(lockInput.value, DELEGUE_CODE_HASH)){
     dashboardUnlocked = true;
     document.getElementById('navDashboardBtn').style.display = '';
     lockOverlay.classList.remove('show');
@@ -901,6 +929,10 @@ document.getElementById('addLessonBtn').addEventListener('click', ()=>{
   const title = document.getElementById('lessonTitle').value.trim();
   const link = document.getElementById('lessonLink').value.trim();
   if(!s || !title || !link){ showToast('Merci de remplir le titre et le lien.'); return; }
+  if(safeUrl(link) === '#' && link !== '#'){
+    showToast('Lien refusé : utilisez une adresse commençant par https:// ou un chemin de fichier valide.');
+    return;
+  }
   if(document.getElementById('lessonType').value === 'video'){
     s.videos.push({ title, src: document.getElementById('lessonSource').value, link });
   } else {
