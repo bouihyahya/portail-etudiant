@@ -824,11 +824,8 @@ document.getElementById('menuToggle').addEventListener('click', ()=>{
   document.getElementById('siteNav').classList.toggle('open');
 });
 
-/* ============ ACCÈS DÉLÉGUÉ (protection basique côté client) ============
-   ⚠️ Ce code est visible par quiconque ouvre le fichier source — ce n'est pas
-   une vraie sécurité, juste un moyen d'empêcher les visiteurs de tomber sur le
-   tableau de bord par hasard. Changez le mot de passe ci-dessous si besoin. */
-const DELEGUE_CODE = "delegue2026";
+
+const DELEGUE_CODE_HASH = "$2b$10$9zV6PxjrP9nftPwKx/9Lbuxhkx6QJWpAkwLWkoVn9ekUlB2AB/Zfq"; 
 let dashboardUnlocked = false;
 
 const lockOverlay = document.getElementById('lockOverlay');
