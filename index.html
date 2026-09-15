@@ -372,6 +372,7 @@
       <b>partagés instantanément avec tous les visiteurs du site</b> grâce à une base de données en ligne — plus besoin
       d'exporter/importer ni de republier le site. Les boutons ci-dessous restent utiles pour garder une copie de secours.
     </p>
+    <p class="dash-intro" id="syncStatus" style="border-left-color:var(--ink-soft);">⏳ Connexion à la base en cours…</p>
 
     <div class="data-io">
       <button class="btn-secondary" id="exportBtn">⬇ Exporter les données</button>
@@ -559,17 +560,34 @@ function applyRemoteData(data){
   }
 }
 
+function setSyncStatus(state){
+  const el = document.getElementById('syncStatus');
+  if(!el) return;
+  if(state === 'online'){
+    el.style.borderLeftColor = 'var(--green-ok)';
+    el.innerHTML = '🟢 Synchronisation active — vos ajouts sont visibles par tous les visiteurs.';
+  } else if(state === 'offline'){
+    el.style.borderLeftColor = 'var(--red-live)';
+    el.innerHTML = '🔴 Hors-ligne — la base de données est inaccessible. Vos ajouts resteront visibles <b>uniquement dans cet onglet</b> et disparaîtront en rechargeant la page. Vérifiez votre connexion internet, ou republiez le fichier le plus récent sur GitHub.';
+  } else {
+    el.style.borderLeftColor = 'var(--ink-soft)';
+    el.innerHTML = '⏳ Connexion à la base en cours…';
+  }
+}
+
 async function writeState(){
   if(!fbAvailable) return; // mode local : rien à synchroniser
   try{
     await dbSetDoc(portailDocRef, { subjects, news, newsIdCounter });
   }catch(err){
+    setSyncStatus('offline');
     showToast("Échec de la synchronisation — vérifiez la connexion.");
   }
 }
 
 function startSync(){
   if(!fbAvailable){
+    setSyncStatus('offline');
     refreshAllPublic();
     observeReveals();
     return;
@@ -582,10 +600,12 @@ function startSync(){
       writeState();
     }
     firestoreReady = true;
+    setSyncStatus('online');
     refreshAllPublic();
     if(document.getElementById('page-dashboard').classList.contains('active')) refreshDashboard();
     observeReveals();
   }, (err)=>{
+    setSyncStatus('offline');
     showToast("Connexion à la base indisponible, mode hors-ligne.");
     refreshAllPublic();
     observeReveals();
@@ -926,7 +946,12 @@ document.getElementById('importInput').addEventListener('change', (e)=>{
   e.target.value = '';
 });
 
-/* ============ INIT ============ */
+/* ============ INIT ============
+   On affiche d'abord le contenu local immédiatement (rapide), puis on se
+   connecte à Firebase en arrière-plan et on rafraîchit avec les données
+   partagées dès qu'elles arrivent. */
+refreshAllPublic();
+observeReveals();
 (async ()=>{
   await initFirebase();
   startSync();
