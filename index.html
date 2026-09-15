@@ -210,6 +210,7 @@
   .resource-item .icon{flex:0 0 auto;width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;}
   .icon.yt{background:linear-gradient(135deg,#E23B41,#A81C21);}
   .icon.drive{background:linear-gradient(135deg,#4B7FD1,var(--blue));}
+  .icon.file{background:linear-gradient(135deg,#3F9D5C,#256B3B);}
   .icon.pdf{background:linear-gradient(135deg,#233a6b,var(--navy));}
   .icon.doc{background:linear-gradient(135deg,var(--gold-bright),var(--gold));color:var(--navy-deep);}
   .resource-item .rtext{flex:1 1 140px;min-width:0;}
@@ -367,9 +368,9 @@
   <section class="page" id="page-dashboard">
     <div class="section-head" style="margin-top:32px;margin-bottom:6px;"><h2>Tableau de bord</h2></div>
     <p class="dash-intro">
-      Espace réservé — non visible ni accessible depuis le menu public. Utilisez <b>Exporter</b> pour sauvegarder vos ajouts
-      dans un fichier, et <b>Importer</b> pour les recharger la prochaine fois — sinon tout revient au contenu de départ en
-      rafraîchissant la page.
+      Espace réservé — non visible ni accessible depuis le menu public. Vos ajouts sont désormais
+      <b>partagés instantanément avec tous les visiteurs du site</b> grâce à une base de données en ligne — plus besoin
+      d'exporter/importer ni de republier le site. Les boutons ci-dessous restent utiles pour garder une copie de secours.
     </p>
 
     <div class="data-io">
@@ -436,7 +437,7 @@
             </select>
           </div>
           <div class="field" id="sourceField"><label for="lessonSource">Source</label>
-            <select id="lessonSource"><option>YouTube</option><option>Drive</option></select>
+            <select id="lessonSource"><option>YouTube</option><option>Drive</option><option>Fichier</option></select>
           </div>
           <div class="field" id="typeField" style="display:none;"><label for="lessonDocType">Format</label>
             <select id="lessonDocType"><option>PDF</option><option>DOCX</option></select>
@@ -446,7 +447,7 @@
         <div class="field">
           <label for="lessonLink">Lien (URL)</label>
           <input type="url" id="lessonLink" placeholder="https://..." required>
-          <p class="field-hint">Ce site ne stocke pas les fichiers. Téléversez d'abord le PDF/la vidéo sur Google Drive (ou YouTube), rendez-le accessible "par lien", puis collez ce lien ici.</p>
+          <p class="field-hint">Documents et vidéos YouTube/Drive : collez le lien de partage. Pour un fichier que vous possédez déjà (vidéo "Fichier" ou document PDF/DOCX) : téléversez-le d'abord dans le dossier <code>videos</code> ou <code>documents</code> de votre dépôt GitHub, puis indiquez ici son chemin, ex. <code>videos/cours1.mp4</code> ou <code>documents/resume1.pdf</code>.</p>
         </div>
         <button type="button" class="btn-primary" id="addLessonBtn">Ajouter la ressource</button>
       </div>
@@ -478,7 +479,36 @@
 
 <div class="toast" id="toast"></div>
 
-<script>
+<script type="module">
+/* ============ FIREBASE (base de données partagée) ============
+   Chargé dynamiquement et protégé par try/catch : si Firebase ne peut pas
+   se charger (aperçu restreint, réseau bloqué...), le site continue de
+   fonctionner normalement en mode local au lieu de rester vide. */
+const firebaseConfig = {
+  apiKey: "AIzaSyC-Kwix9zRGgifuVJQJ0IRjaZ1RR7nFD3E",
+  authDomain: "portail-etudiant-2b816.firebaseapp.com",
+  projectId: "portail-etudiant-2b816",
+  storageBucket: "portail-etudiant-2b816.firebasestorage.app",
+  messagingSenderId: "293474038857",
+  appId: "1:293474038857:web:f6efcff7c2ca8123f53b98"
+};
+let dbSetDoc = null, dbOnSnapshot = null, portailDocRef = null;
+let fbAvailable = false, firestoreReady = false;
+
+async function initFirebase(){
+  try{
+    const appMod = await import("https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js");
+    const fsMod = await import("https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js");
+    const fbApp = appMod.initializeApp(firebaseConfig);
+    const db = fsMod.getFirestore(fbApp);
+    portailDocRef = fsMod.doc(db, "portail", "data");
+    dbSetDoc = fsMod.setDoc;
+    dbOnSnapshot = fsMod.onSnapshot;
+    fbAvailable = true;
+  }catch(err){
+    fbAvailable = false;
+  }
+}
 /* ============ DONNÉES (état en mémoire) ============ */
 const ICON_PALETTE = [
   {icon:"🎲", accent:"#2F5DA8", soft:"#DCE6F5"},
@@ -513,7 +543,54 @@ let news = [
 
 let newsIdCounter = 7;
 let currentSubjectDetail = null;
-let currentLessonSubjectId = subjects[0].id;
+let currentLessonSubjectId = subjects[0] ? subjects[0].id : null;
+
+/* ============ SYNCHRONISATION EN TEMPS RÉEL ============
+   Toutes les données (matières, vidéos, documents, actualités) vivent dans
+   un seul document Firestore, partagé par tous les visiteurs. onSnapshot
+   écoute en continu : dès qu'une personne modifie quelque chose, tout le
+   monde reçoit la mise à jour automatiquement, sans recharger la page. */
+function applyRemoteData(data){
+  subjects = data.subjects || subjects;
+  news = data.news || news;
+  newsIdCounter = data.newsIdCounter || newsIdCounter;
+  if(!subjects.find(s=>s.id===currentLessonSubjectId)){
+    currentLessonSubjectId = subjects[0] ? subjects[0].id : null;
+  }
+}
+
+async function writeState(){
+  if(!fbAvailable) return; // mode local : rien à synchroniser
+  try{
+    await dbSetDoc(portailDocRef, { subjects, news, newsIdCounter });
+  }catch(err){
+    showToast("Échec de la synchronisation — vérifiez la connexion.");
+  }
+}
+
+function startSync(){
+  if(!fbAvailable){
+    refreshAllPublic();
+    observeReveals();
+    return;
+  }
+  dbOnSnapshot(portailDocRef, (snap)=>{
+    if(snap.exists()){
+      applyRemoteData(snap.data());
+    } else {
+      // Aucun document distant pour l'instant : on initialise avec le contenu actuel.
+      writeState();
+    }
+    firestoreReady = true;
+    refreshAllPublic();
+    if(document.getElementById('page-dashboard').classList.contains('active')) refreshDashboard();
+    observeReveals();
+  }, (err)=>{
+    showToast("Connexion à la base indisponible, mode hors-ligne.");
+    refreshAllPublic();
+    observeReveals();
+  });
+}
 
 function subjectStyle(index){ return ICON_PALETTE[index % ICON_PALETTE.length]; }
 
@@ -596,7 +673,7 @@ function openSubject(id){
 
   document.getElementById('videoList').innerHTML = s.videos.length ? s.videos.map(v=>`
     <div class="resource-item">
-      <span class="icon ${v.src==='YouTube'?'yt':'drive'}">${v.src==='YouTube'?'▶':'⬆'}</span>
+      <span class="icon ${v.src==='YouTube'?'yt':v.src==='Drive'?'drive':'file'}">${v.src==='YouTube'?'▶':v.src==='Drive'?'⬆':'🎬'}</span>
       <div class="rtext"><div class="rtitle">${v.title}</div><div class="rmeta">${v.src}</div></div>
       <a class="open" href="${v.link}" target="_blank" rel="noopener">Regarder</a>
     </div>`).join('') : `<p style="color:var(--ink-soft);font-size:14px;">Aucune vidéo pour le moment.</p>`;
@@ -700,7 +777,7 @@ document.addEventListener('click', (e)=>{
   const delNews = e.target.closest('[data-del-news]');
   if(delNews){
     news = news.filter(n=>n.id != delNews.dataset.delNews);
-    renderNewsManageList(); refreshAllPublic();
+    renderNewsManageList(); refreshAllPublic(); writeState();
     showToast('Actualité supprimée.');
     return;
   }
@@ -709,7 +786,7 @@ document.addEventListener('click', (e)=>{
   if(delVideo){
     const s = subjects.find(x=>x.id===currentLessonSubjectId);
     s.videos.splice(Number(delVideo.dataset.delVideo),1);
-    renderLessonManageList(); refreshAllPublic();
+    renderLessonManageList(); refreshAllPublic(); writeState();
     showToast('Vidéo supprimée.');
     return;
   }
@@ -717,7 +794,7 @@ document.addEventListener('click', (e)=>{
   if(delDoc){
     const s = subjects.find(x=>x.id===currentLessonSubjectId);
     s.docs.splice(Number(delDoc.dataset.delDoc),1);
-    renderLessonManageList(); refreshAllPublic();
+    renderLessonManageList(); refreshAllPublic(); writeState();
     showToast('Document supprimé.');
     return;
   }
@@ -785,7 +862,7 @@ document.getElementById('newsForm').addEventListener('submit', (e)=>{
     desc: document.getElementById('newsDesc').value.trim()
   });
   e.target.reset();
-  renderNewsManageList(); refreshAllPublic();
+  renderNewsManageList(); refreshAllPublic(); writeState();
   showToast('Actualité publiée.');
 });
 
@@ -798,7 +875,7 @@ document.getElementById('subjectForm').addEventListener('submit', (e)=>{
   subjects.push({ id, code, name, desc, videos:[], docs:[] });
   currentLessonSubjectId = id;
   e.target.reset();
-  renderLessonSubjectPicker(); renderLessonManageList(); refreshAllPublic();
+  renderLessonSubjectPicker(); renderLessonManageList(); refreshAllPublic(); writeState();
   showToast('Matière ajoutée.');
 });
 
@@ -814,7 +891,7 @@ document.getElementById('addLessonBtn').addEventListener('click', ()=>{
   }
   document.getElementById('lessonTitle').value = '';
   document.getElementById('lessonLink').value = '';
-  renderLessonManageList(); refreshAllPublic();
+  renderLessonManageList(); refreshAllPublic(); writeState();
   showToast('Ressource ajoutée.');
 });
 
@@ -839,7 +916,7 @@ document.getElementById('importInput').addEventListener('change', (e)=>{
       if(!data.subjects || !data.news) throw new Error('format invalide');
       subjects = data.subjects; news = data.news; newsIdCounter = data.newsIdCounter || (news.length+1);
       currentLessonSubjectId = subjects[0] ? subjects[0].id : null;
-      refreshAllPublic(); refreshDashboard();
+      refreshAllPublic(); refreshDashboard(); writeState();
       showToast('Données importées.');
     }catch(err){
       showToast('Fichier invalide.');
@@ -850,8 +927,10 @@ document.getElementById('importInput').addEventListener('change', (e)=>{
 });
 
 /* ============ INIT ============ */
-refreshAllPublic();
-observeReveals();
+(async ()=>{
+  await initFirebase();
+  startSync();
+})();
 </script>
 
 </body>
