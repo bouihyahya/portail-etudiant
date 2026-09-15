@@ -616,11 +616,7 @@ function startSync(){
 
 function subjectStyle(index){ return ICON_PALETTE[index % ICON_PALETTE.length]; }
 
-/* ============ SÉCURITÉ : échappement et validation ============
-   Tout texte fourni via le tableau de bord (titres, descriptions, liens)
-   passe par ici avant d'être inséré dans la page, pour empêcher qu'un
-   contenu malveillant (ex. une balise script imbriquée dans un titre) ne
-   s'exécute chez les autres visiteurs. */
+/* ============ SÉCURITÉ : échappement et validation ============ */
 function escapeHtml(str){
   return String(str ?? '').replace(/[&<>"']/g, ch => ({
     '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
