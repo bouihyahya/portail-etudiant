@@ -484,15 +484,7 @@
 <div class="toast" id="toast"></div>
 
 <script type="module">
-/* ============ FIREBASE (base de données partagée) ============
-   Chargé dynamiquement et protégé par try/catch : si Firebase ne peut pas
-   se charger (aperçu restreint, réseau bloqué...), le site continue de
-   fonctionner normalement en mode local au lieu de rester vide.
-   ⚠️ La config ci-dessous est encodée pour ne pas s'afficher en clair au
-   premier coup d'œil (View Source), mais reste techniquement visible par
-   quiconque ouvre les outils de développeur — ce n'est pas un vrai secret,
-   Firebase ne le considère d'ailleurs pas comme sensible : la vraie
-   protection vient des règles Firestore. */
+/* ============ FIREBASE (base de données partagée) ============*/
 const _CFG_B64 = "eyJhcGlLZXkiOiJBSXphU3lDLUt3aXg5elJHZ2lmdVZKUUowSVJqYVoxUlI3bkZEM0UiLCJhdXRoRG9tYWluIjoicG9ydGFpbC1ldHVkaWFudC0yYjgxNi5maXJlYmFzZWFwcC5jb20iLCJwcm9qZWN0SWQiOiJwb3J0YWlsLWV0dWRpYW50LTJiODE2Iiwic3RvcmFnZUJ1Y2tldCI6InBvcnRhaWwtZXR1ZGlhbnQtMmI4MTYuZmlyZWJhc2VzdG9yYWdlLmFwcCIsIm1lc3NhZ2luZ1NlbmRlcklkIjoiMjkzNDc0MDM4ODU3IiwiYXBwSWQiOiIxOjI5MzQ3NDAzODg1Nzp3ZWI6ZjZlZmNmZjdjMmNhODEyM2Y1M2I5OCJ9";
 const firebaseConfig = JSON.parse(atob(_CFG_B64));
 let dbSetDoc = null, dbOnSnapshot = null, portailDocRef = null;
