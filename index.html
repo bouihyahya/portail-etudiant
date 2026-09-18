@@ -538,6 +538,7 @@
 <div class="toast" id="toast"></div>
 
 <script type="module">
+
 const _CFG_B64 = "eyJhcGlLZXkiOiJBSXphU3lDLUt3aXg5elJHZ2lmdVZKUUowSVJqYVoxUlI3bkZEM0UiLCJhdXRoRG9tYWluIjoicG9ydGFpbC1ldHVkaWFudC0yYjgxNi5maXJlYmFzZWFwcC5jb20iLCJwcm9qZWN0SWQiOiJwb3J0YWlsLWV0dWRpYW50LTJiODE2Iiwic3RvcmFnZUJ1Y2tldCI6InBvcnRhaWwtZXR1ZGlhbnQtMmI4MTYuZmlyZWJhc2VzdG9yYWdlLmFwcCIsIm1lc3NhZ2luZ1NlbmRlcklkIjoiMjkzNDc0MDM4ODU3IiwiYXBwSWQiOiIxOjI5MzQ3NDAzODg1Nzp3ZWI6ZjZlZmNmZjdjMmNhODEyM2Y1M2I5OCJ9";
 const firebaseConfig = JSON.parse(atob(_CFG_B64));
 let dbSetDoc = null, dbOnSnapshot = null, portailDocRef = null;
@@ -586,6 +587,7 @@ let subjects = [
   { id:"droit-entreprise", code:"DRT101", name:"Droit de l'Entreprise", desc:"Cadre juridique des affaires, contrats et statut des sociétés.", videos:[], docs:[],
     schedule:{ prof:"Khater Imad", group:"B", day:"Vendredi", room:"Amphi 4", start:"16:00", end:"18:00" } }
 ];
+const DEFAULT_SUBJECTS = JSON.parse(JSON.stringify(subjects));
 
 let news = [
   { id:1, date:"09 sept.", tag:"Urgent", urgent:true, title:"Report de l'examen d'Algorithmique au 15 octobre", desc:"L'examen prévu le 10 octobre est déplacé au 15 octobre, même salle et même horaire." },
@@ -612,6 +614,19 @@ function applyRemoteData(data){
   if(!subjects.find(s=>s.id===currentLessonSubjectId)){
     currentLessonSubjectId = subjects[0] ? subjects[0].id : null;
   }
+
+  // Réparation automatique : si une matière reçue n'a pas encore d'horaire
+  // (ancienne donnée enregistrée avant l'ajout de cette fonctionnalité),
+  // on le complète avec les valeurs par défaut connues pour cette matière,
+  // puis on renvoie la version corrigée pour que ça reste réglé.
+  let repaired = false;
+  subjects.forEach(s=>{
+    if(!s.schedule){
+      const def = DEFAULT_SUBJECTS.find(d=>d.id===s.id);
+      if(def && def.schedule){ s.schedule = { ...def.schedule }; repaired = true; }
+    }
+  });
+  if(repaired) writeState();
 }
 
 function setSyncStatus(state){
@@ -668,11 +683,7 @@ function startSync(){
 
 function subjectStyle(index){ return ICON_PALETTE[index % ICON_PALETTE.length]; }
 
-/* ============ SÉCURITÉ : échappement et validation ============
-   Tout texte fourni via le tableau de bord (titres, descriptions, liens)
-   passe par ici avant d'être inséré dans la page, pour empêcher qu'un
-   contenu malveillant (ex. une balise script imbriquée dans un titre) ne
-   s'exécute chez les autres visiteurs. */
+
 function escapeHtml(str){
   return String(str ?? '').replace(/[&<>"']/g, ch => ({
     '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
