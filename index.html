@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://firestore.googleapis.com https://www.gstatic.com https://*.googleapis.com; frame-ancestors 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests;">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://firestore.googleapis.com https://www.gstatic.com https://*.googleapis.com; frame-ancestors 'self';">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Portail du Groupe — Ressources & Actualités</title>
@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700;9..144,800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/bcryptjs@3.0.3/umd/index.js" integrity="sha384-f1NR6kH8ccNxh9nal5W5FdbK0m8WrusZnHAjvzvDCiCkCakNyhvNL1tRfXfpv/0M" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bcryptjs@3.0.3/umd/index.js"></script>
 <style>
   :root{
     --navy:#132242;
@@ -169,6 +169,27 @@
   .subject-card .desc{font-size:13px;color:var(--ink-soft);line-height:1.45;flex:1;}
   .subj-meta{display:flex;gap:14px;font-size:12px;color:var(--ink-soft);border-top:1px solid var(--line);padding-top:12px;margin-top:2px;}
   .subj-meta span{display:flex;align-items:center;gap:5px;}
+  .subj-schedule{font-size:12px;color:var(--ink-soft);display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+  .subj-schedule b{color:var(--navy-deep);font-weight:700;}
+  .schedule-bar{
+    display:flex;flex-wrap:wrap;gap:10px 22px;align-items:center;
+    background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);
+    border-radius:12px;padding:12px 16px;margin-top:14px;width:100%;
+  }
+  .schedule-bar .sch-item{display:flex;align-items:center;gap:6px;font-size:13px;color:#E4E9F5;}
+  .schedule-bar .sch-item b{color:#fff;font-weight:700;}
+
+  .schedule-table-wrap{overflow-x:auto;background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow-sm);}
+  table.schedule-table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:720px;}
+  table.schedule-table th{
+    background:var(--navy);color:#fff;text-align:left;font-weight:700;font-size:12px;
+    letter-spacing:.03em;text-transform:uppercase;padding:12px 14px;white-space:nowrap;
+  }
+  table.schedule-table td{padding:12px 14px;border-bottom:1px solid var(--line);white-space:nowrap;}
+  table.schedule-table tr:last-child td{border-bottom:none;}
+  table.schedule-table tr:hover td{background:var(--paper);}
+  table.schedule-table td.subj-cell{font-weight:700;color:var(--navy-deep);white-space:normal;min-width:160px;}
+  table.schedule-table td.time-cell{font-weight:700;color:var(--blue);}
   .subj-arrow{position:absolute;top:18px;right:18px;color:var(--line);font-size:16px;transition:transform .3s var(--ease), color .3s var(--ease);}
   .subject-card:hover .subj-arrow{transform:translateX(3px);color:var(--accent,var(--gold));}
 
@@ -307,13 +328,14 @@
     <span class="logo-dot">PG</span>
     <span class="txt">
       <span class="mark">Portail du Groupe</span>
-      <span class="sub">Faculté de science juridique économique et social souissi — S3 Sciences de gestion </span>
+      <span class="sub">Faculté — L2 Sciences</span>
     </span>
   </div>
   <button class="menu-toggle" id="menuToggle" aria-label="Ouvrir le menu">☰</button>
   <nav class="site-nav" id="siteNav">
     <button data-nav="home" class="active">Accueil</button>
     <button data-nav="subjects-full">Matières</button>
+    <button data-nav="schedule-full">Emploi du temps</button>
     <button data-nav="news-full">Actualités</button>
     <button data-nav="dashboard" id="navDashboardBtn" style="display:none;">Tableau de bord</button>
   </nav>
@@ -359,6 +381,12 @@
       <div class="resource-col"><h2>🎥 Vidéos de cours</h2><div id="videoList"></div></div>
       <div class="resource-col"><h2>📄 Documents & résumés</h2><div id="docList"></div></div>
     </div>
+  </section>
+
+  <!-- ===== EMPLOI DU TEMPS ===== -->
+  <section class="page" id="page-schedule-full">
+    <div class="section-head" style="margin-top:32px;"><h2>Emploi du temps</h2></div>
+    <div class="schedule-table-wrap" id="scheduleTableWrap"></div>
   </section>
 
   <!-- ===== ACTUALITES COMPLETES ===== -->
@@ -415,6 +443,32 @@
 
     <!-- Onglet Matières & leçons -->
     <div class="dash-panel" id="panel-lessons">
+      <div class="form-card" style="margin-bottom:24px;">
+        <h3>Horaire de la matière</h3>
+        <div class="field subject-picker">
+          <label for="scheduleSubject">Matière concernée</label>
+          <select id="scheduleSubject"></select>
+        </div>
+        <div class="field"><label for="schProf">Professeur</label><input type="text" id="schProf" placeholder="ex. Bakkali Jihane"></div>
+        <div class="field-row">
+          <div class="field"><label for="schGroup">Groupe</label><input type="text" id="schGroup" placeholder="ex. B"></div>
+          <div class="field"><label for="schRoom">Salle / Amphi</label><input type="text" id="schRoom" placeholder="ex. Amphi 8"></div>
+        </div>
+        <div class="field">
+          <label for="schDay">Jour</label>
+            <select id="schDay">
+              <option value="">—</option>
+              <option>Lundi</option><option>Mardi</option><option>Mercredi</option>
+              <option>Jeudi</option><option>Vendredi</option><option>Samedi</option>
+            </select>
+        </div>
+        <div class="field-row">
+          <div class="field"><label for="schStart">Heure début</label><input type="text" id="schStart" placeholder="ex. 14:00"></div>
+          <div class="field"><label for="schEnd">Heure fin</label><input type="text" id="schEnd" placeholder="ex. 16:00"></div>
+        </div>
+        <button type="button" class="btn-primary" id="saveScheduleBtn">Enregistrer l'horaire</button>
+      </div>
+
       <div class="form-card" style="margin-bottom:24px;">
         <h3>Ajouter une matière</h3>
         <form id="subjectForm">
@@ -484,7 +538,6 @@
 <div class="toast" id="toast"></div>
 
 <script type="module">
-/* ============ FIREBASE (base de données partagée) ============*/
 const _CFG_B64 = "eyJhcGlLZXkiOiJBSXphU3lDLUt3aXg5elJHZ2lmdVZKUUowSVJqYVoxUlI3bkZEM0UiLCJhdXRoRG9tYWluIjoicG9ydGFpbC1ldHVkaWFudC0yYjgxNi5maXJlYmFzZWFwcC5jb20iLCJwcm9qZWN0SWQiOiJwb3J0YWlsLWV0dWRpYW50LTJiODE2Iiwic3RvcmFnZUJ1Y2tldCI6InBvcnRhaWwtZXR1ZGlhbnQtMmI4MTYuZmlyZWJhc2VzdG9yYWdlLmFwcCIsIm1lc3NhZ2luZ1NlbmRlcklkIjoiMjkzNDc0MDM4ODU3IiwiYXBwSWQiOiIxOjI5MzQ3NDAzODg1Nzp3ZWI6ZjZlZmNmZjdjMmNhODEyM2Y1M2I5OCJ9";
 const firebaseConfig = JSON.parse(atob(_CFG_B64));
 let dbSetDoc = null, dbOnSnapshot = null, portailDocRef = null;
@@ -518,13 +571,20 @@ const NEWS_ICONS = { "Urgent":"❗", "Cours":"📘", "Réunion":"🗓️", "Rent
 function newsIcon(tag){ return NEWS_ICONS[tag] || "📰"; }
 
 let subjects = [
-  { id:"probabilite", code:"PROB101", name:"Probabilité", desc:"Lois de probabilité, variables aléatoires et applications statistiques.", videos:[], docs:[] },
-  { id:"eco-maroc", code:"ECO-MA", name:"Économie du Maroc", desc:"Structures économiques, politiques publiques et enjeux de développement du pays.", videos:[], docs:[] },
-  { id:"francais", code:"LANG-FR", name:"Langues étrangères : Français", desc:"Expression écrite et orale, communication professionnelle en français.", videos:[], docs:[] },
-  { id:"management", code:"MNG101", name:"Management des Organisations", desc:"Fonctions, structures et pratiques de management dans l'entreprise.", videos:[], docs:[] },
-  { id:"sociologie", code:"SOC101", name:"Sociologie des Organisations", desc:"Comportements, pouvoir et dynamiques sociales au sein des organisations.", videos:[], docs:[] },
-  { id:"compta-analytique", code:"CAG101", name:"Comptabilité Analytique de Gestion", desc:"Calcul et analyse des coûts pour la prise de décision en gestion.", videos:[], docs:[] },
-  { id:"droit-entreprise", code:"DRT101", name:"Droit de l'Entreprise", desc:"Cadre juridique des affaires, contrats et statut des sociétés.", videos:[], docs:[] }
+  { id:"probabilite", code:"PROB101", name:"Probabilité", desc:"Lois de probabilité, variables aléatoires et applications statistiques.", videos:[], docs:[],
+    schedule:{ prof:"El Ouazzani Sidi Yahia", group:"B", day:"Lundi", room:"Amphi 2", start:"16:00", end:"18:00" } },
+  { id:"eco-maroc", code:"ECO-MA", name:"Économie du Maroc", desc:"Structures économiques, politiques publiques et enjeux de développement du pays.", videos:[], docs:[],
+    schedule:{ prof:"Bakkali Jihane", group:"B", day:"Lundi", room:"Salle 11", start:"14:00", end:"16:00" } },
+  { id:"francais", code:"LANG-FR", name:"Langues étrangères : Français", desc:"Expression écrite et orale, communication professionnelle en français.", videos:[], docs:[],
+    schedule:{ prof:"Moumade Jamila", group:"B", day:"Mercredi", room:"Salle 20", start:"14:00", end:"16:00" } },
+  { id:"management", code:"MNG101", name:"Management des Organisations", desc:"Fonctions, structures et pratiques de management dans l'entreprise.", videos:[], docs:[],
+    schedule:{ prof:"Touzi Badr", group:"B", day:"Jeudi", room:"Amphi 8", start:"12:00", end:"14:00" } },
+  { id:"sociologie", code:"SOC101", name:"Sociologie des Organisations", desc:"Comportements, pouvoir et dynamiques sociales au sein des organisations.", videos:[], docs:[],
+    schedule:{ prof:"Hasnaoui Rachid", group:"B", day:"Mercredi", room:"Amphi 8", start:"12:00", end:"14:00" } },
+  { id:"compta-analytique", code:"CAG101", name:"Comptabilité Analytique de Gestion", desc:"Calcul et analyse des coûts pour la prise de décision en gestion.", videos:[], docs:[],
+    schedule:{ prof:"Boushib Kaoutar", group:"B", day:"Vendredi", room:"Salle 12", start:"14:00", end:"16:00" } },
+  { id:"droit-entreprise", code:"DRT101", name:"Droit de l'Entreprise", desc:"Cadre juridique des affaires, contrats et statut des sociétés.", videos:[], docs:[],
+    schedule:{ prof:"Khater Imad", group:"B", day:"Vendredi", room:"Amphi 4", start:"16:00", end:"18:00" } }
 ];
 
 let news = [
@@ -608,7 +668,11 @@ function startSync(){
 
 function subjectStyle(index){ return ICON_PALETTE[index % ICON_PALETTE.length]; }
 
-/* ============ SÉCURITÉ : échappement et validation ============ */
+/* ============ SÉCURITÉ : échappement et validation ============
+   Tout texte fourni via le tableau de bord (titres, descriptions, liens)
+   passe par ici avant d'être inséré dans la page, pour empêcher qu'un
+   contenu malveillant (ex. une balise script imbriquée dans un titre) ne
+   s'exécute chez les autres visiteurs. */
 function escapeHtml(str){
   return String(str ?? '').replace(/[&<>"']/g, ch => ({
     '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
@@ -635,6 +699,8 @@ function showToast(msg){
 /* ============ RENDU — PUBLIC ============ */
 function subjectCard(s, index){
   const st = subjectStyle(index);
+  const sch = s.schedule;
+  const scheduleLine = sch ? `<div class="subj-schedule">📅 <b>${escapeHtml(sch.day||'')}</b> ${escapeHtml(sch.start||'')}–${escapeHtml(sch.end||'')} · ${escapeHtml(sch.room||'')}</div>` : '';
   return `<button class="subject-card" data-open-subject="${escapeHtml(s.id)}" style="--accent:${st.accent};--accent-soft:${st.soft};">
     <span class="subj-arrow">→</span>
     <div class="subj-top">
@@ -642,6 +708,7 @@ function subjectCard(s, index){
       <div><div class="subj-code">${escapeHtml(s.code)}</div><div class="subj-name">${escapeHtml(s.name)}</div></div>
     </div>
     <p class="desc">${escapeHtml(s.desc)}</p>
+    ${scheduleLine}
     <div class="subj-meta"><span>🎥 ${s.videos.length} vidéos</span><span>📄 ${s.docs.length} docs</span></div>
   </button>`;
 }
@@ -679,6 +746,40 @@ function renderHome(){
 function renderSubjectsFull(){ document.getElementById('subjectListFull').innerHTML = subjects.map((s,i)=>subjectCard(s,i)).join(''); }
 function renderNewsFull(){ document.getElementById('newsListFull').innerHTML = news.map(n=>newsItem(n,true)).join(''); }
 
+function computeDuration(start, end){
+  if(!start || !end) return '—';
+  const [sh,sm] = start.split(':').map(Number);
+  const [eh,em] = end.split(':').map(Number);
+  if([sh,sm,eh,em].some(isNaN)) return '—';
+  let mins = (eh*60+em) - (sh*60+sm);
+  if(mins < 0) return '—';
+  const h = Math.floor(mins/60), m = mins%60;
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+}
+
+function renderScheduleTable(){
+  const wrap = document.getElementById('scheduleTableWrap');
+  const rows = subjects.map(s=>{
+    const sch = s.schedule || {};
+    return `<tr>
+      <td class="subj-cell">${escapeHtml(s.name)}</td>
+      <td>${escapeHtml(sch.prof || '—')}</td>
+      <td>${escapeHtml(sch.group || '—')}</td>
+      <td>${escapeHtml(sch.room || '—')}</td>
+      <td>${escapeHtml(sch.day || '—')}</td>
+      <td class="time-cell">${escapeHtml(sch.start || '—')}</td>
+      <td class="time-cell">${escapeHtml(sch.end || '—')}</td>
+      <td>${computeDuration(sch.start, sch.end)}</td>
+    </tr>`;
+  }).join('');
+  wrap.innerHTML = `<table class="schedule-table">
+    <thead><tr>
+      <th>Matière</th><th>Professeur</th><th>Groupe</th><th>Salle</th><th>Jour</th><th>Début</th><th>Fin</th><th>Durée</th>
+    </tr></thead>
+    <tbody>${rows || '<tr><td colspan="8" style="text-align:center;color:var(--ink-soft);">Aucune matière.</td></tr>'}</tbody>
+  </table>`;
+}
+
 function renderTicker(){
   const items = news.map(n => `<span>${newsIcon(n.tag)} <b>${escapeHtml(n.tag.toUpperCase())}</b> — ${escapeHtml(n.title)}</span>`);
   const track = document.getElementById('tickerTrack');
@@ -690,12 +791,21 @@ function renderSubjectDetailContent(id){
   const s = subjects[idx];
   if(!s) return;
   const st = subjectStyle(idx);
+  const sch = s.schedule;
+  const scheduleBar = sch ? `
+    <div class="schedule-bar">
+      <span class="sch-item">👤 <b>${escapeHtml(sch.prof||'—')}</b></span>
+      <span class="sch-item">📅 <b>${escapeHtml(sch.day||'—')}</b></span>
+      <span class="sch-item">🕒 <b>${escapeHtml(sch.start||'—')} – ${escapeHtml(sch.end||'—')}</b></span>
+      <span class="sch-item">📍 <b>${escapeHtml(sch.room||'—')}</b></span>
+    </div>` : '';
   document.getElementById('subjectDetailHeader').innerHTML = `
     <span class="subj-icon">${st.icon}</span>
     <div class="htext">
       <div class="code-badge">${escapeHtml(s.code)}</div>
       <h1>${escapeHtml(s.name)}</h1>
       <div class="desc-full">${escapeHtml(s.desc)}</div>
+      ${scheduleBar}
     </div>`;
   document.getElementById('subjectDetailHeader').style.setProperty('--accent-bg', st.accent);
 
@@ -721,7 +831,7 @@ function openSubject(id){
 }
 
 function refreshAllPublic(){
-  renderHome(); renderSubjectsFull(); renderNewsFull(); renderTicker();
+  renderHome(); renderSubjectsFull(); renderNewsFull(); renderTicker(); renderScheduleTable();
   if(currentSubjectDetail) renderSubjectDetailContent(currentSubjectDetail);
 }
 
@@ -736,8 +846,21 @@ function renderNewsManageList(){
 }
 
 function renderLessonSubjectPicker(){
-  const sel = document.getElementById('lessonSubject');
-  sel.innerHTML = subjects.map(s=>`<option value="${escapeHtml(s.id)}" ${s.id===currentLessonSubjectId?'selected':''}>${escapeHtml(s.code)} — ${escapeHtml(s.name)}</option>`).join('');
+  const options = subjects.map(s=>`<option value="${escapeHtml(s.id)}" ${s.id===currentLessonSubjectId?'selected':''}>${escapeHtml(s.code)} — ${escapeHtml(s.name)}</option>`).join('');
+  document.getElementById('lessonSubject').innerHTML = options;
+  const schSel = document.getElementById('scheduleSubject');
+  if(schSel) schSel.innerHTML = options;
+}
+
+function renderScheduleForm(){
+  const s = subjects.find(x=>x.id===currentLessonSubjectId);
+  const sch = (s && s.schedule) || {};
+  document.getElementById('schProf').value = sch.prof || '';
+  document.getElementById('schGroup').value = sch.group || '';
+  document.getElementById('schDay').value = sch.day || '';
+  document.getElementById('schRoom').value = sch.room || '';
+  document.getElementById('schStart').value = sch.start || '';
+  document.getElementById('schEnd').value = sch.end || '';
 }
 
 function renderLessonManageList(){
@@ -761,6 +884,7 @@ function refreshDashboard(){
   renderNewsManageList();
   renderLessonSubjectPicker();
   renderLessonManageList();
+  renderScheduleForm();
 }
 
 /* ============ SCROLL REVEAL ============ */
@@ -871,7 +995,32 @@ lockInput.addEventListener('keydown', (e)=>{ if(e.key === 'Enter') tryUnlock(); 
 
 document.getElementById('lessonSubject').addEventListener('change', (e)=>{
   currentLessonSubjectId = e.target.value;
+  const schSel = document.getElementById('scheduleSubject');
+  if(schSel) schSel.value = currentLessonSubjectId;
   renderLessonManageList();
+  renderScheduleForm();
+});
+
+document.getElementById('scheduleSubject').addEventListener('change', (e)=>{
+  currentLessonSubjectId = e.target.value;
+  document.getElementById('lessonSubject').value = currentLessonSubjectId;
+  renderLessonManageList();
+  renderScheduleForm();
+});
+
+document.getElementById('saveScheduleBtn').addEventListener('click', ()=>{
+  const s = subjects.find(x=>x.id===currentLessonSubjectId);
+  if(!s){ showToast('Choisissez une matière.'); return; }
+  s.schedule = {
+    prof: document.getElementById('schProf').value.trim(),
+    group: document.getElementById('schGroup').value.trim(),
+    day: document.getElementById('schDay').value,
+    room: document.getElementById('schRoom').value.trim(),
+    start: document.getElementById('schStart').value.trim(),
+    end: document.getElementById('schEnd').value.trim()
+  };
+  refreshAllPublic(); writeState();
+  showToast('Horaire enregistré.');
 });
 
 document.getElementById('lessonType').addEventListener('change', (e)=>{
