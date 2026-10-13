@@ -538,11 +538,21 @@
 <div class="toast" id="toast"></div>
 
 <script type="module">
-
+/* ============ FIREBASE (base de données partagée) ============
+   Chargé dynamiquement et protégé par try/catch : si Firebase ne peut pas
+   se charger (aperçu restreint, réseau bloqué...), le site continue de
+   fonctionner normalement en mode local au lieu de rester vide.
+   ⚠️ La config ci-dessous est encodée pour ne pas s'afficher en clair au
+   premier coup d'œil (View Source), mais reste techniquement visible par
+   quiconque ouvre les outils de développeur — ce n'est pas un vrai secret,
+   Firebase ne le considère d'ailleurs pas comme sensible : la vraie
+   protection vient des règles Firestore. */
 const _CFG_B64 = "eyJhcGlLZXkiOiJBSXphU3lDLUt3aXg5elJHZ2lmdVZKUUowSVJqYVoxUlI3bkZEM0UiLCJhdXRoRG9tYWluIjoicG9ydGFpbC1ldHVkaWFudC0yYjgxNi5maXJlYmFzZWFwcC5jb20iLCJwcm9qZWN0SWQiOiJwb3J0YWlsLWV0dWRpYW50LTJiODE2Iiwic3RvcmFnZUJ1Y2tldCI6InBvcnRhaWwtZXR1ZGlhbnQtMmI4MTYuZmlyZWJhc2VzdG9yYWdlLmFwcCIsIm1lc3NhZ2luZ1NlbmRlcklkIjoiMjkzNDc0MDM4ODU3IiwiYXBwSWQiOiIxOjI5MzQ3NDAzODg1Nzp3ZWI6ZjZlZmNmZjdjMmNhODEyM2Y1M2I5OCJ9";
 const firebaseConfig = JSON.parse(atob(_CFG_B64));
-let dbSetDoc = null, dbOnSnapshot = null, portailDocRef = null;
+let dbSetDoc = null, dbOnSnapshot = null, portailDocRef = null, portailBackupRef = null;
 let fbAvailable = false, firestoreReady = false;
+let serverLoaded = false;   // vrai seulement après une lecture CONFIRMÉE par le serveur
+let lastRemoteData = null;  // dernière version connue côté serveur (pour la sauvegarde)
 
 async function initFirebase(){
   try{
@@ -551,6 +561,7 @@ async function initFirebase(){
     const fbApp = appMod.initializeApp(firebaseConfig);
     const db = fsMod.getFirestore(fbApp);
     portailDocRef = fsMod.doc(db, "portail", "data");
+    portailBackupRef = fsMod.doc(db, "portail", "backup");
     dbSetDoc = fsMod.setDoc;
     dbOnSnapshot = fsMod.onSnapshot;
     fbAvailable = true;
@@ -607,7 +618,8 @@ let currentLessonSubjectId = subjects[0] ? subjects[0].id : null;
    un seul document Firestore, partagé par tous les visiteurs. onSnapshot
    écoute en continu : dès qu'une personne modifie quelque chose, tout le
    monde reçoit la mise à jour automatiquement, sans recharger la page. */
-function applyRemoteData(data){
+function applyRemoteData(data, fromServer){
+  lastRemoteData = JSON.parse(JSON.stringify(data));
   subjects = data.subjects || subjects;
   news = data.news || news;
   newsIdCounter = data.newsIdCounter || newsIdCounter;
@@ -626,7 +638,7 @@ function applyRemoteData(data){
       if(def && def.schedule){ s.schedule = { ...def.schedule }; repaired = true; }
     }
   });
-  if(repaired) writeState();
+  if(repaired && fromServer) writeState();
 }
 
 function setSyncStatus(state){
@@ -646,7 +658,17 @@ function setSyncStatus(state){
 
 async function writeState(){
   if(!fbAvailable) return; // mode local : rien à synchroniser
+  // SÉCURITÉ : on n'écrit JAMAIS tant que le serveur n'a pas confirmé le contenu réel,
+  // sinon on risquerait d'écraser les vraies données par les valeurs par défaut.
+  if(!serverLoaded){
+    showToast("Synchronisation pas encore prête — réessayez dans quelques secondes.");
+    return;
+  }
   try{
+    // Sauvegarde automatique de la dernière version connue avant d'écraser
+    if(lastRemoteData){
+      await dbSetDoc(portailBackupRef, { ...lastRemoteData, backedUpAt: Date.now() });
+    }
     await dbSetDoc(portailDocRef, { subjects, news, newsIdCounter });
   }catch(err){
     setSyncStatus('offline');
@@ -661,15 +683,21 @@ function startSync(){
     observeReveals();
     return;
   }
-  dbOnSnapshot(portailDocRef, (snap)=>{
+  dbOnSnapshot(portailDocRef, { includeMetadataChanges: true }, (snap)=>{
+    const fromServer = !snap.metadata.fromCache;
     if(snap.exists()){
-      applyRemoteData(snap.data());
-    } else {
-      // Aucun document distant pour l'instant : on initialise avec le contenu actuel.
+      if(fromServer) serverLoaded = true;
+      applyRemoteData(snap.data(), fromServer);
+    } else if(fromServer){
+      // Le SERVEUR confirme qu'il n'y a aucun document : seulement là on initialise.
+      serverLoaded = true;
       writeState();
+    } else {
+      // Réponse du cache local (peut-être vide à tort) : on attend la réponse du serveur.
+      return;
     }
     firestoreReady = true;
-    setSyncStatus('online');
+    setSyncStatus(serverLoaded ? 'online' : 'loading');
     refreshAllPublic();
     if(document.getElementById('page-dashboard').classList.contains('active')) refreshDashboard();
     observeReveals();
@@ -683,7 +711,11 @@ function startSync(){
 
 function subjectStyle(index){ return ICON_PALETTE[index % ICON_PALETTE.length]; }
 
-
+/* ============ SÉCURITÉ : échappement et validation ============
+   Tout texte fourni via le tableau de bord (titres, descriptions, liens)
+   passe par ici avant d'être inséré dans la page, pour empêcher qu'un
+   contenu malveillant (ex. une balise script imbriquée dans un titre) ne
+   s'exécute chez les autres visiteurs. */
 function escapeHtml(str){
   return String(str ?? '').replace(/[&<>"']/g, ch => ({
     '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
@@ -970,7 +1002,6 @@ document.addEventListener('click', (e)=>{
 document.getElementById('menuToggle').addEventListener('click', ()=>{
   document.getElementById('siteNav').classList.toggle('open');
 });
-
 
 const _HASH_B64 = "JDJiJDEwJDl6VjZQeGpyUDluZnRQd0t4LzlMYnV4aGt4NlFKV3BBa3dMV2tvVm45ZWtVbEIyQUIvWmZx";
 const DELEGUE_CODE_HASH = atob(_HASH_B64); 
