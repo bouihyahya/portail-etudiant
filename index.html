@@ -178,6 +178,11 @@
   }
   .schedule-bar .sch-item{display:flex;align-items:center;gap:6px;font-size:13px;color:#E4E9F5;}
   .schedule-bar .sch-item b{color:#fff;font-weight:700;}
+  .schedule-bar .sch-label{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--gold-bright);min-width:44px;}
+  .type-badge{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.04em;padding:3px 9px;border-radius:999px;background:var(--blue-soft);color:var(--blue);}
+  .type-badge.td{background:var(--gold-soft);color:#7a5d00;}
+  .danger-zone{border-color:#F0C9CB;}
+  .danger-zone h3{color:var(--red-live);}
 
   .schedule-table-wrap{overflow-x:auto;background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow-sm);}
   table.schedule-table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:720px;}
@@ -466,7 +471,37 @@
           <div class="field"><label for="schStart">Heure début</label><input type="text" id="schStart" placeholder="ex. 14:00"></div>
           <div class="field"><label for="schEnd">Heure fin</label><input type="text" id="schEnd" placeholder="ex. 16:00"></div>
         </div>
-        <button type="button" class="btn-primary" id="saveScheduleBtn">Enregistrer l'horaire</button>
+        <button type="button" class="btn-primary" id="saveScheduleBtn">Enregistrer l'horaire du cours</button>
+      </div>
+
+      <div class="form-card" style="margin-bottom:24px;">
+        <h3>Séances de TD de la matière</h3>
+        <p class="field-hint" style="margin:0 0 12px;">Ajoutez les séances de TD de la matière choisie plus haut. Elles apparaissent dans l'emploi du temps avec l'étiquette « TD ».</p>
+        <div class="field"><label for="tdProf">Professeur / Chargé de TD</label><input type="text" id="tdProf" placeholder="ex. Bakkali Jihane"></div>
+        <div class="field-row">
+          <div class="field"><label for="tdGroup">Groupe</label><input type="text" id="tdGroup" placeholder="ex. B1"></div>
+          <div class="field"><label for="tdRoom">Salle</label><input type="text" id="tdRoom" placeholder="ex. Salle 12"></div>
+        </div>
+        <div class="field">
+          <label for="tdDay">Jour</label>
+          <select id="tdDay">
+            <option value="">—</option>
+            <option>Lundi</option><option>Mardi</option><option>Mercredi</option>
+            <option>Jeudi</option><option>Vendredi</option><option>Samedi</option>
+          </select>
+        </div>
+        <div class="field-row">
+          <div class="field"><label for="tdStart">Heure début</label><input type="text" id="tdStart" placeholder="ex. 10:00"></div>
+          <div class="field"><label for="tdEnd">Heure fin</label><input type="text" id="tdEnd" placeholder="ex. 12:00"></div>
+        </div>
+        <button type="button" class="btn-primary" id="addTdBtn">Ajouter la séance de TD</button>
+        <div class="manage-list" id="tdManageList" style="margin-top:16px;"></div>
+      </div>
+
+      <div class="form-card danger-zone" style="margin-bottom:24px;">
+        <h3>Supprimer la matière</h3>
+        <p class="field-hint" style="margin:0 0 12px;">Supprime la matière choisie plus haut avec tout son contenu (vidéos, documents, horaire, TD). Cette action est définitive.</p>
+        <button type="button" class="btn-secondary" id="deleteSubjectBtn" style="color:var(--red-live);border-color:#F0C9CB;">🗑 Supprimer cette matière</button>
       </div>
 
       <div class="form-card" style="margin-bottom:24px;">
@@ -802,10 +837,9 @@ function computeDuration(start, end){
 
 function renderScheduleTable(){
   const wrap = document.getElementById('scheduleTableWrap');
-  const rows = subjects.map(s=>{
-    const sch = s.schedule || {};
-    return `<tr>
-      <td class="subj-cell">${escapeHtml(s.name)}</td>
+  const row = (name, type, sch)=>`<tr>
+      <td class="subj-cell">${escapeHtml(name)}</td>
+      <td><span class="type-badge${type==='TD'?' td':''}">${type}</span></td>
       <td>${escapeHtml(sch.prof || '—')}</td>
       <td>${escapeHtml(sch.group || '—')}</td>
       <td>${escapeHtml(sch.room || '—')}</td>
@@ -814,12 +848,16 @@ function renderScheduleTable(){
       <td class="time-cell">${escapeHtml(sch.end || '—')}</td>
       <td>${computeDuration(sch.start, sch.end)}</td>
     </tr>`;
+  const rows = subjects.map(s=>{
+    let html = row(s.name, 'Cours', s.schedule || {});
+    (s.tds || []).forEach(td=>{ html += row(s.name, 'TD', td); });
+    return html;
   }).join('');
   wrap.innerHTML = `<table class="schedule-table">
     <thead><tr>
-      <th>Matière</th><th>Professeur</th><th>Groupe</th><th>Salle</th><th>Jour</th><th>Début</th><th>Fin</th><th>Durée</th>
+      <th>Matière</th><th>Type</th><th>Professeur</th><th>Groupe</th><th>Salle</th><th>Jour</th><th>Début</th><th>Fin</th><th>Durée</th>
     </tr></thead>
-    <tbody>${rows || '<tr><td colspan="8" style="text-align:center;color:var(--ink-soft);">Aucune matière.</td></tr>'}</tbody>
+    <tbody>${rows || '<tr><td colspan="9" style="text-align:center;color:var(--ink-soft);">Aucune matière.</td></tr>'}</tbody>
   </table>`;
 }
 
@@ -835,13 +873,16 @@ function renderSubjectDetailContent(id){
   if(!s) return;
   const st = subjectStyle(idx);
   const sch = s.schedule;
-  const scheduleBar = sch ? `
+  const barLine = (label, x)=>`
     <div class="schedule-bar">
-      <span class="sch-item">👤 <b>${escapeHtml(sch.prof||'—')}</b></span>
-      <span class="sch-item">📅 <b>${escapeHtml(sch.day||'—')}</b></span>
-      <span class="sch-item">🕒 <b>${escapeHtml(sch.start||'—')} – ${escapeHtml(sch.end||'—')}</b></span>
-      <span class="sch-item">📍 <b>${escapeHtml(sch.room||'—')}</b></span>
-    </div>` : '';
+      <span class="sch-label">${label}</span>
+      <span class="sch-item">👤 <b>${escapeHtml(x.prof||'—')}</b></span>
+      ${x.group ? `<span class="sch-item">👥 <b>Groupe ${escapeHtml(x.group)}</b></span>` : ''}
+      <span class="sch-item">📅 <b>${escapeHtml(x.day||'—')}</b></span>
+      <span class="sch-item">🕒 <b>${escapeHtml(x.start||'—')} – ${escapeHtml(x.end||'—')}</b></span>
+      <span class="sch-item">📍 <b>${escapeHtml(x.room||'—')}</b></span>
+    </div>`;
+  const scheduleBar = (sch ? barLine('Cours', sch) : '') + (s.tds || []).map(td=>barLine('TD', td)).join('');
   document.getElementById('subjectDetailHeader').innerHTML = `
     <span class="subj-icon">${st.icon}</span>
     <div class="htext">
@@ -923,11 +964,24 @@ function renderLessonManageList(){
   list.innerHTML = (videoRows+docRows) || `<p style="color:var(--ink-soft);font-size:13.5px;">Aucune ressource pour cette matière.</p>`;
 }
 
+function renderTdManageList(){
+  const s = subjects.find(x=>x.id===currentLessonSubjectId);
+  const list = document.getElementById('tdManageList');
+  if(!list) return;
+  const tds = (s && s.tds) || [];
+  list.innerHTML = tds.map((t,i)=>`
+    <div class="manage-row">
+      <div class="mtext"><b>TD — ${escapeHtml(t.day||'—')} ${escapeHtml(t.start||'')}–${escapeHtml(t.end||'')}</b><span>${escapeHtml(t.prof||'—')}${t.group?' · Groupe '+escapeHtml(t.group):''}${t.room?' · '+escapeHtml(t.room):''}</span></div>
+      <button class="btn-danger" data-del-td="${i}">Supprimer</button>
+    </div>`).join('') || `<p style="color:var(--ink-soft);font-size:13px;margin:0;">Aucune séance de TD pour cette matière.</p>`;
+}
+
 function refreshDashboard(){
   renderNewsManageList();
   renderLessonSubjectPicker();
   renderLessonManageList();
   renderScheduleForm();
+  renderTdManageList();
 }
 
 /* ============ SCROLL REVEAL ============ */
@@ -989,6 +1043,14 @@ document.addEventListener('click', (e)=>{
     showToast('Vidéo supprimée.');
     return;
   }
+  const delTd = e.target.closest('[data-del-td]');
+  if(delTd){
+    const s = subjects.find(x=>x.id===currentLessonSubjectId);
+    if(s && s.tds){ s.tds.splice(Number(delTd.dataset.delTd),1); }
+    renderTdManageList(); refreshAllPublic(); writeState();
+    showToast('Séance de TD supprimée.');
+    return;
+  }
   const delDoc = e.target.closest('[data-del-doc]');
   if(delDoc){
     const s = subjects.find(x=>x.id===currentLessonSubjectId);
@@ -1041,6 +1103,7 @@ document.getElementById('lessonSubject').addEventListener('change', (e)=>{
   if(schSel) schSel.value = currentLessonSubjectId;
   renderLessonManageList();
   renderScheduleForm();
+  renderTdManageList();
 });
 
 document.getElementById('scheduleSubject').addEventListener('change', (e)=>{
@@ -1048,6 +1111,7 @@ document.getElementById('scheduleSubject').addEventListener('change', (e)=>{
   document.getElementById('lessonSubject').value = currentLessonSubjectId;
   renderLessonManageList();
   renderScheduleForm();
+  renderTdManageList();
 });
 
 document.getElementById('saveScheduleBtn').addEventListener('click', ()=>{
@@ -1063,6 +1127,37 @@ document.getElementById('saveScheduleBtn').addEventListener('click', ()=>{
   };
   refreshAllPublic(); writeState();
   showToast('Horaire enregistré.');
+});
+
+document.getElementById('addTdBtn').addEventListener('click', ()=>{
+  const s = subjects.find(x=>x.id===currentLessonSubjectId);
+  if(!s){ showToast('Choisissez une matière.'); return; }
+  const td = {
+    prof: document.getElementById('tdProf').value.trim(),
+    group: document.getElementById('tdGroup').value.trim(),
+    day: document.getElementById('tdDay').value,
+    room: document.getElementById('tdRoom').value.trim(),
+    start: document.getElementById('tdStart').value.trim(),
+    end: document.getElementById('tdEnd').value.trim()
+  };
+  if(!td.day || !td.start || !td.end){ showToast('Indiquez au moins le jour et les heures du TD.'); return; }
+  if(!Array.isArray(s.tds)) s.tds = [];
+  s.tds.push(td);
+  ['tdProf','tdGroup','tdRoom','tdStart','tdEnd'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('tdDay').value = '';
+  renderTdManageList(); refreshAllPublic(); writeState();
+  showToast('Séance de TD ajoutée.');
+});
+
+document.getElementById('deleteSubjectBtn').addEventListener('click', ()=>{
+  const s = subjects.find(x=>x.id===currentLessonSubjectId);
+  if(!s){ showToast('Aucune matière sélectionnée.'); return; }
+  if(!confirm('Supprimer définitivement la matière « '+s.name+' » avec tout son contenu ?')) return;
+  subjects = subjects.filter(x=>x.id!==s.id);
+  if(currentSubjectDetail === s.id) currentSubjectDetail = null;
+  currentLessonSubjectId = subjects[0] ? subjects[0].id : null;
+  refreshDashboard(); refreshAllPublic(); writeState();
+  showToast('Matière supprimée.');
 });
 
 document.getElementById('lessonType').addEventListener('change', (e)=>{
