@@ -226,6 +226,10 @@
   .pomo-steps b{color:var(--navy-deep);}
   .pomo-study{font-size:13px;color:var(--ink-soft);margin-bottom:16px;display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;}
   .pomo-study select{padding:7px 10px;border:1px solid var(--line);border-radius:8px;font-size:13px;max-width:100%;}
+  .pomo-res-h{font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-soft);margin:14px 0 8px;}
+  .pomo-res-empty{font-size:13px;color:var(--ink-soft);margin:0;}
+  .pomo-res-link{display:inline-block;margin-top:6px;font-size:13px;font-weight:600;color:var(--blue);background:none;border:none;padding:0;}
+  #pomoResources .resource-item{padding:10px 12px;}
   .site-badge{display:inline-block;font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;background:#DCEFEA;color:#1E7F72;}
   .site-badge.annexe{background:#F5E1D6;color:#B4562F;}
   .type-badge{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.04em;padding:3px 9px;border-radius:999px;background:var(--blue-soft);color:var(--blue);}
@@ -473,6 +477,7 @@
       </div>
 
       <div class="pomo-side">
+        <div class="form-card" id="pomoResources"></div>
         <div class="form-card">
           <h3>Comment ça marche ?</h3>
           <ol class="pomo-steps">
@@ -1583,7 +1588,37 @@ function renderPomodoroSubjects(){
   const prev = sel.value;
   sel.innerHTML = '<option value="">Choisir une matière…</option>' + subjects.map(s=>`<option value="${escapeHtml(s.id)}">${escapeHtml(s.name)}</option>`).join('');
   if(prev && subjects.some(s=>s.id===prev)) sel.value = prev;
+  renderPomoResources();
 }
+function renderPomoResources(){
+  const box = document.getElementById('pomoResources');
+  const sel = document.getElementById('pomoSubject');
+  if(!box || !sel) return;
+  const s = subjects.find(x=>x.id===sel.value);
+  if(!s){
+    box.innerHTML = '<h3>📚 Ressources de la matière</h3><p class="pomo-res-empty">Choisissez une matière dans « Je révise » : ses vidéos et ses documents s\'afficheront ici pour réviser pendant votre session.</p>';
+    return;
+  }
+  const vids = (s.videos||[]).map(v=>`
+    <div class="resource-item">
+      <span class="icon ${v.src==='YouTube'?'yt':v.src==='Drive'?'drive':'file'}">${v.src==='YouTube'?'▶':v.src==='Drive'?'⬆':'🎬'}</span>
+      <div class="rtext"><div class="rtitle">${escapeHtml(v.title)}</div><div class="rmeta">${escapeHtml(v.src)}</div></div>
+      <a class="open" href="${escapeHtml(safeUrl(v.link))}" target="_blank" rel="noopener noreferrer">Regarder</a>
+    </div>`).join('');
+  const docs = (s.docs||[]).map(d=>`
+    <div class="resource-item">
+      <span class="icon ${d.type==='PDF'?'pdf':'doc'}">${escapeHtml(d.type)}</span>
+      <div class="rtext"><div class="rtitle">${escapeHtml(d.title)}</div><div class="rmeta">${escapeHtml(d.type)}</div></div>
+      <a class="open" href="${escapeHtml(safeUrl(d.link))}" target="_blank" rel="noopener noreferrer">Ouvrir</a>
+    </div>`).join('');
+  box.innerHTML = `<h3>📚 ${escapeHtml(s.name)}</h3>
+    <div class="pomo-res-h">🎥 Vidéos de cours (${(s.videos||[]).length})</div>
+    ${vids || '<p class="pomo-res-empty">Aucune vidéo pour le moment.</p>'}
+    <div class="pomo-res-h">📄 Documents & résumés (${(s.docs||[]).length})</div>
+    ${docs || '<p class="pomo-res-empty">Aucun document pour le moment.</p>'}
+    <button class="pomo-res-link" data-open-subject="${escapeHtml(s.id)}">Voir la page complète de la matière →</button>`;
+}
+document.getElementById('pomoSubject').addEventListener('change', renderPomoResources);
 pomoRender();
 
 /* ============ INIT ============
