@@ -179,6 +179,53 @@
   .schedule-bar .sch-item{display:flex;align-items:center;gap:6px;font-size:13px;color:#E4E9F5;}
   .schedule-bar .sch-item b{color:#fff;font-weight:700;}
   .schedule-bar .sch-label{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--gold-bright);min-width:44px;}
+  .countdown-card{
+    margin:28px 0 0;border-radius:20px;padding:28px 32px;color:#fff;position:relative;overflow:hidden;
+    background:linear-gradient(120deg,#182b52 0%,var(--navy-deep) 100%);box-shadow:var(--shadow-md);
+    display:grid;grid-template-columns:1fr;gap:22px;align-items:center;
+  }
+  .countdown-card::after{content:"";position:absolute;right:-60px;top:-60px;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(231,187,60,.22),transparent 70%);pointer-events:none;}
+  @media (min-width:820px){.countdown-card{grid-template-columns:1fr auto;}}
+  .cd-eyebrow{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--gold-bright);}
+  .cd-title{font-family:'Fraunces',serif;font-size:24px;font-weight:700;color:#fff;margin:4px 0 6px;}
+  .cd-dates{font-size:13.5px;color:#C7D0E6;}
+  .cd-status{display:inline-block;margin-top:10px;font-size:12px;font-weight:700;padding:4px 12px;border-radius:999px;background:rgba(231,187,60,.16);color:var(--gold-bright);}
+  .cd-units{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;position:relative;z-index:1;}
+  .cd-unit{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:12px 6px;text-align:center;min-width:68px;}
+  .cd-num{display:block;font-family:'Fraunces',serif;font-size:30px;font-weight:700;color:var(--gold-bright);line-height:1.1;font-variant-numeric:tabular-nums;}
+  .cd-lbl{font-size:11px;color:#B9C3DC;text-transform:uppercase;letter-spacing:.05em;}
+  .cd-done{font-size:15px;color:#C7D0E6;position:relative;z-index:1;}
+  @media (max-width:420px){.countdown-card{padding:22px 18px;}.cd-num{font-size:24px;}.cd-unit{min-width:0;}}
+  .cd-mini{background:linear-gradient(90deg,#0A1428,#182b52);color:#E4E9F5;text-align:center;font-size:13px;padding:9px 14px;border-bottom:1px solid rgba(255,255,255,.08);line-height:1.4;}
+  .cd-mini b{color:var(--gold-bright);font-weight:700;font-variant-numeric:tabular-nums;}
+  .cd-mini .cd-mini-title{font-weight:600;color:#fff;}
+  @media (max-width:420px){.cd-mini{font-size:12px;padding:8px 10px;}}
+  .pomo-wrap{display:grid;grid-template-columns:1fr;gap:28px;margin-top:8px;}
+  @media (min-width:900px){.pomo-wrap{grid-template-columns:1.1fr .9fr;align-items:start;}}
+  .pomo-card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:26px 22px;box-shadow:var(--shadow-md);text-align:center;--pc:var(--blue);}
+  .pomo-card.short{--pc:#1E7F72;}
+  .pomo-card.long{--pc:#6B4FA0;}
+  .pomo-modes{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:22px;}
+  .pomo-mode{padding:8px 15px;border-radius:999px;border:1px solid var(--line);background:#fff;font-size:13px;font-weight:600;color:var(--ink-soft);transition:all .2s var(--ease);}
+  .pomo-mode.active{background:var(--pc);border-color:var(--pc);color:#fff;}
+  .pomo-ring{position:relative;width:min(260px,70vw);aspect-ratio:1;margin:0 auto 18px;}
+  .pomo-ring svg{width:100%;height:100%;transform:rotate(-90deg);}
+  .pomo-ring .track{fill:none;stroke:var(--line);stroke-width:10;}
+  .pomo-ring .prog{fill:none;stroke:var(--pc);stroke-width:10;stroke-linecap:round;stroke-dasharray:628.32;stroke-dashoffset:0;transition:stroke-dashoffset .4s linear, stroke .3s;}
+  .pomo-time{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+  .pomo-time .t{font-family:'Fraunces',serif;font-size:clamp(40px,12vw,56px);font-weight:700;color:var(--navy-deep);font-variant-numeric:tabular-nums;line-height:1;}
+  .pomo-time .l{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--pc);margin-top:8px;}
+  .pomo-controls{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:18px;}
+  .pomo-controls .btn-primary{background:var(--pc);min-width:120px;font-size:15px;padding:12px 26px;}
+  .pomo-dots{display:flex;gap:8px;justify-content:center;margin-bottom:6px;}
+  .pomo-dots i{width:12px;height:12px;border-radius:50%;background:var(--line);transition:background .3s;}
+  .pomo-dots i.on{background:var(--gold);}
+  .pomo-stats{font-size:13px;color:var(--ink-soft);}
+  .pomo-side .form-card{margin-bottom:18px;text-align:left;}
+  .pomo-steps{margin:0;padding-left:18px;font-size:13.5px;color:var(--ink-soft);display:flex;flex-direction:column;gap:8px;}
+  .pomo-steps b{color:var(--navy-deep);}
+  .pomo-study{font-size:13px;color:var(--ink-soft);margin-bottom:16px;display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;}
+  .pomo-study select{padding:7px 10px;border:1px solid var(--line);border-radius:8px;font-size:13px;max-width:100%;}
   .type-badge{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.04em;padding:3px 9px;border-radius:999px;background:var(--blue-soft);color:var(--blue);}
   .type-badge.td{background:var(--gold-soft);color:#7a5d00;}
   .danger-zone{border-color:#F0C9CB;}
@@ -265,7 +312,7 @@
   .form-card h3{font-size:15px;margin-bottom:14px;}
   .field{margin-bottom:12px;}
   .field label{display:block;font-size:12.5px;font-weight:600;color:var(--ink-soft);margin-bottom:5px;}
-  .field input[type=text],.field input[type=url],.field select,.field textarea{
+  .field input[type=text],.field input[type=url],.field input[type=date],.field select,.field textarea{
     width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font-size:13.5px;color:var(--ink);background:#fbfcfe;
     transition:border-color .2s, box-shadow .2s;
   }
@@ -342,9 +389,12 @@
     <button data-nav="subjects-full">Matières</button>
     <button data-nav="schedule-full">Emploi du temps</button>
     <button data-nav="news-full">Actualités</button>
+    <button data-nav="pomodoro">Pomodoro</button>
     <button data-nav="dashboard" id="navDashboardBtn" style="display:none;">Tableau de bord</button>
   </nav>
 </header>
+
+<div class="cd-mini" id="examMini" role="timer" style="display:none;"></div>
 
 <main>
 
@@ -364,6 +414,8 @@
         </div>
       </div>
     </div>
+
+    <div class="countdown-card reveal" id="examCountdown" role="timer"></div>
 
     <div class="section-head reveal"><h2>Matières</h2><button class="see-all" data-nav="subjects-full">Voir toutes les matières →</button></div>
     <div class="subject-grid reveal" id="subjectListHome"></div>
@@ -394,6 +446,54 @@
     <div class="schedule-table-wrap" id="scheduleTableWrap"></div>
   </section>
 
+  <!-- ===== POMODORO ===== -->
+  <section class="page" id="page-pomodoro">
+    <div class="section-head" style="margin-top:32px;"><h2>Technique Pomodoro</h2></div>
+    <div class="pomo-wrap">
+      <div class="pomo-card" id="pomoCard">
+        <div class="pomo-modes" id="pomoModes">
+          <button class="pomo-mode active" data-pomo-mode="focus">Concentration</button>
+          <button class="pomo-mode" data-pomo-mode="short">Pause courte</button>
+          <button class="pomo-mode" data-pomo-mode="long">Pause longue</button>
+        </div>
+        <div class="pomo-study">📚 Je révise : <select id="pomoSubject"></select></div>
+        <div class="pomo-ring">
+          <svg viewBox="0 0 220 220" aria-hidden="true"><circle class="track" cx="110" cy="110" r="100"/><circle class="prog" id="pomoProg" cx="110" cy="110" r="100"/></svg>
+          <div class="pomo-time"><span class="t" id="pomoTime">25:00</span><span class="l" id="pomoLabel">Concentration</span></div>
+        </div>
+        <div class="pomo-controls">
+          <button class="btn-primary" id="pomoStart">▶ Démarrer</button>
+          <button class="btn-secondary" id="pomoSkip" title="Passer à l'étape suivante">⏭ Suivant</button>
+          <button class="btn-secondary" id="pomoReset">↺ Réinitialiser</button>
+        </div>
+        <div class="pomo-dots" id="pomoDots"><i></i><i></i><i></i><i></i></div>
+        <div class="pomo-stats" id="pomoStats">Aucune session terminée pour l'instant.</div>
+      </div>
+
+      <div class="pomo-side">
+        <div class="form-card">
+          <h3>Comment ça marche ?</h3>
+          <ol class="pomo-steps">
+            <li><b>Choisissez une tâche</b> à réviser (un chapitre, une série d'exercices).</li>
+            <li><b>Concentrez-vous 25 minutes</b> sans téléphone ni distraction.</li>
+            <li><b>Pause courte de 5 minutes</b> : levez-vous, buvez de l'eau.</li>
+            <li><b>Après 4 sessions</b>, prenez une pause longue de 15 minutes.</li>
+          </ol>
+        </div>
+        <div class="form-card">
+          <h3>Réglages</h3>
+          <div class="field-row">
+            <div class="field"><label for="pomoFocusMin">Concentration (min)</label><input type="number" id="pomoFocusMin" min="1" max="120" value="25" style="width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;"></div>
+            <div class="field"><label for="pomoShortMin">Pause courte (min)</label><input type="number" id="pomoShortMin" min="1" max="60" value="5" style="width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;"></div>
+          </div>
+          <div class="field"><label for="pomoLongMin">Pause longue (min)</label><input type="number" id="pomoLongMin" min="1" max="90" value="15" style="width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;"></div>
+          <div class="checkbox-row"><input type="checkbox" id="pomoAuto"><label for="pomoAuto">Enchaîner automatiquement les étapes</label></div>
+          <div class="checkbox-row"><input type="checkbox" id="pomoSound" checked><label for="pomoSound">Son à la fin de chaque étape</label></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- ===== ACTUALITES COMPLETES ===== -->
   <section class="page" id="page-news-full">
     <div class="section-head" style="margin-top:32px;"><h2>Actualités du groupe</h2></div>
@@ -421,6 +521,7 @@
     <div class="dash-tabs">
       <button class="dash-tab active" data-tab="news">Actualités</button>
       <button class="dash-tab" data-tab="lessons">Matières & leçons</button>
+      <button class="dash-tab" data-tab="exam">Examens</button>
     </div>
 
     <!-- Onglet Actualités -->
@@ -447,6 +548,19 @@
     </div>
 
     <!-- Onglet Matières & leçons -->
+    <!-- Onglet Examens -->
+    <div class="dash-panel" id="panel-exam">
+      <div class="form-card" style="max-width:520px;">
+        <h3>Période d'examens (compte à rebours)</h3>
+        <div class="field"><label for="examTitle">Titre affiché</label><input type="text" id="examTitle" placeholder="ex. Examens du semestre"></div>
+        <div class="field-row">
+          <div class="field"><label for="examStart">Premier jour</label><input type="date" id="examStart"></div>
+          <div class="field"><label for="examEnd">Dernier jour</label><input type="date" id="examEnd"></div>
+        </div>
+        <button type="button" class="btn-primary" id="saveExamBtn">Enregistrer la période</button>
+      </div>
+    </div>
+
     <div class="dash-panel" id="panel-lessons">
       <div class="form-card" style="margin-bottom:24px;">
         <h3>Horaire de la matière</h3>
@@ -645,6 +759,8 @@ let news = [
 ];
 
 let newsIdCounter = 7;
+const DEFAULT_EXAM = { title:"Examens du semestre", start:"2026-12-21", end:"2026-12-29" };
+let exam = { ...DEFAULT_EXAM };
 let currentSubjectDetail = null;
 let currentLessonSubjectId = subjects[0] ? subjects[0].id : null;
 
@@ -658,6 +774,8 @@ function applyRemoteData(data, fromServer){
   subjects = data.subjects || subjects;
   news = data.news || news;
   newsIdCounter = data.newsIdCounter || newsIdCounter;
+  const hadExam = !!(data.exam && data.exam.start && data.exam.end);
+  if(hadExam) exam = data.exam;
   if(!subjects.find(s=>s.id===currentLessonSubjectId)){
     currentLessonSubjectId = subjects[0] ? subjects[0].id : null;
   }
@@ -673,7 +791,7 @@ function applyRemoteData(data, fromServer){
       if(def && def.schedule){ s.schedule = { ...def.schedule }; repaired = true; }
     }
   });
-  if(repaired && fromServer) writeState();
+  if((repaired || !hadExam) && fromServer) writeState();
 }
 
 function setSyncStatus(state){
@@ -704,7 +822,7 @@ async function writeState(){
     if(lastRemoteData){
       await dbSetDoc(portailBackupRef, { ...lastRemoteData, backedUpAt: Date.now() });
     }
-    await dbSetDoc(portailDocRef, { subjects, news, newsIdCounter });
+    await dbSetDoc(portailDocRef, { subjects, news, newsIdCounter, exam });
   }catch(err){
     setSyncStatus('offline');
     showToast("Échec de la synchronisation — vérifiez la connexion.");
@@ -914,8 +1032,102 @@ function openSubject(id){
   showPage('subject-detail');
 }
 
+/* ============ COMPTE À REBOURS DES EXAMENS ============ */
+function parseLocalDate(str, endOfDay){
+  const [y,m,d] = String(str||'').split('-').map(Number);
+  if(!y || !m || !d) return null;
+  return endOfDay ? new Date(y, m-1, d, 23, 59, 59) : new Date(y, m-1, d, 0, 0, 0);
+}
+function formatLongDate(str){
+  const dt = parseLocalDate(str, false);
+  if(!dt) return '—';
+  const out = dt.toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+  return out.charAt(0).toUpperCase() + out.slice(1);
+}
+function renderExamCard(){
+  const box = document.getElementById('examCountdown');
+  if(!box) return;
+  const startD = parseLocalDate(exam.start, false), endD = parseLocalDate(exam.end, true);
+  tickExamMini();
+  if(!startD || !endD){ box.style.display = 'none'; return; }
+  box.style.display = '';
+  box.innerHTML = `
+    <div>
+      <div class="cd-eyebrow">⏳ Compte à rebours</div>
+      <div class="cd-title">${escapeHtml(exam.title || 'Examens')}</div>
+      <div class="cd-dates">Du ${escapeHtml(formatLongDate(exam.start))} au ${escapeHtml(formatLongDate(exam.end))}</div>
+      <span class="cd-status" id="cdStatus"></span>
+    </div>
+    <div id="cdBody"></div>`;
+  tickExamCountdown();
+}
+function tickExamCountdown(){
+  const body = document.getElementById('cdBody'), status = document.getElementById('cdStatus');
+  if(!body || !status) return;
+  const startD = parseLocalDate(exam.start, false), endD = parseLocalDate(exam.end, true);
+  if(!startD || !endD) return;
+  const now = new Date();
+  let target = null;
+  if(now < startD){ target = startD; status.textContent = 'Début des examens dans'; }
+  else if(now <= endD){ target = endD; status.textContent = '🔥 Examens en cours — fin dans'; }
+  else {
+    status.textContent = 'Terminé';
+    body.innerHTML = '<div class="cd-done">La période d\'examens est terminée. Bonne continuation ! 🎓</div>';
+    return;
+  }
+  let diff = Math.max(0, Math.floor((target - now) / 1000));
+  const days = Math.floor(diff / 86400); diff %= 86400;
+  const hours = Math.floor(diff / 3600); diff %= 3600;
+  const mins = Math.floor(diff / 60), secs = diff % 60;
+  const pad = n => String(n).padStart(2,'0');
+  const units = [[days,'Jours'],[pad(hours),'Heures'],[pad(mins),'Min'],[pad(secs),'Sec']];
+  if(!body.querySelector('.cd-units')){
+    body.innerHTML = '<div class="cd-units">' + units.map(()=>'<div class="cd-unit"><span class="cd-num"></span><span class="cd-lbl"></span></div>').join('') + '</div>';
+  }
+  const els = body.querySelectorAll('.cd-unit');
+  units.forEach((u,i)=>{ els[i].querySelector('.cd-num').textContent = u[0]; els[i].querySelector('.cd-lbl').textContent = u[1]; });
+}
+function tickExamMini(){
+  const el = document.getElementById('examMini');
+  if(!el) return;
+  const startD = parseLocalDate(exam.start, false), endD = parseLocalDate(exam.end, true);
+  const now = new Date();
+  if(!startD || !endD || now > endD){ el.style.display = 'none'; return; }
+  const before = now < startD;
+  let diff = Math.max(0, Math.floor(((before ? startD : endD) - now) / 1000));
+  const d = Math.floor(diff / 86400); diff %= 86400;
+  const h = Math.floor(diff / 3600); diff %= 3600;
+  const m = Math.floor(diff / 60), sec = diff % 60;
+  const pad = n => String(n).padStart(2,'0');
+  el.style.display = '';
+  el.innerHTML = (before ? '⏳ ' : '🔥 ') + '<span class="cd-mini-title">' + escapeHtml(exam.title || 'Examens') + '</span> '
+    + (before ? 'dans ' : '— fin dans ')
+    + '<b>' + d + ' j ' + pad(h) + ' h ' + pad(m) + ' min ' + pad(sec) + ' s</b>';
+}
+function tickAllCountdowns(){ tickExamCountdown(); tickExamMini(); }
+setInterval(tickAllCountdowns, 1000);
+tickExamMini();
+
+function renderExamForm(){
+  const t = document.getElementById('examTitle');
+  if(!t) return;
+  t.value = exam.title || '';
+  document.getElementById('examStart').value = exam.start || '';
+  document.getElementById('examEnd').value = exam.end || '';
+}
+document.getElementById('saveExamBtn').addEventListener('click', ()=>{
+  const title = document.getElementById('examTitle').value.trim() || 'Examens';
+  const start = document.getElementById('examStart').value;
+  const end = document.getElementById('examEnd').value;
+  if(!start || !end){ showToast('Indiquez le premier et le dernier jour.'); return; }
+  if(end < start){ showToast('Le dernier jour doit être après le premier.'); return; }
+  exam = { title, start, end };
+  renderExamCard(); writeState();
+  showToast('Période d\'examens enregistrée.');
+});
+
 function refreshAllPublic(){
-  renderHome(); renderSubjectsFull(); renderNewsFull(); renderTicker(); renderScheduleTable();
+  renderHome(); renderSubjectsFull(); renderNewsFull(); renderTicker(); renderScheduleTable(); renderExamCard(); renderPomodoroSubjects();
   if(currentSubjectDetail) renderSubjectDetailContent(currentSubjectDetail);
 }
 
@@ -982,6 +1194,7 @@ function refreshDashboard(){
   renderLessonManageList();
   renderScheduleForm();
   renderTdManageList();
+  renderExamForm();
 }
 
 /* ============ SCROLL REVEAL ============ */
@@ -1064,6 +1277,7 @@ document.addEventListener('click', (e)=>{
 document.getElementById('menuToggle').addEventListener('click', ()=>{
   document.getElementById('siteNav').classList.toggle('open');
 });
+
 
 const _HASH_B64 = "JDJiJDEwJDl6VjZQeGpyUDluZnRQd0t4LzlMYnV4aGt4NlFKV3BBa3dMV2tvVm45ZWtVbEIyQUIvWmZx";
 const DELEGUE_CODE_HASH = atob(_HASH_B64); 
@@ -1217,7 +1431,7 @@ document.getElementById('addLessonBtn').addEventListener('click', ()=>{
 
 /* ============ EXPORT / IMPORT ============ */
 document.getElementById('exportBtn').addEventListener('click', ()=>{
-  const data = JSON.stringify({subjects, news, newsIdCounter}, null, 2);
+  const data = JSON.stringify({subjects, news, newsIdCounter, exam}, null, 2);
   const blob = new Blob([data], {type:'application/json'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -1235,6 +1449,7 @@ document.getElementById('importInput').addEventListener('change', (e)=>{
       const data = JSON.parse(evt.target.result);
       if(!data.subjects || !data.news) throw new Error('format invalide');
       subjects = data.subjects; news = data.news; newsIdCounter = data.newsIdCounter || (news.length+1);
+      if(data.exam && data.exam.start && data.exam.end) exam = data.exam;
       currentLessonSubjectId = subjects[0] ? subjects[0].id : null;
       refreshAllPublic(); refreshDashboard(); writeState();
       showToast('Données importées.');
@@ -1245,6 +1460,119 @@ document.getElementById('importInput').addEventListener('change', (e)=>{
   reader.readAsText(file);
   e.target.value = '';
 });
+
+/* ============ POMODORO ============
+   Minuteur basé sur l'heure réelle (endTs) : reste exact même si l'onglet
+   est en arrière-plan. Les réglages restent dans l'onglet (rien n'est enregistré). */
+const BASE_TITLE = document.title;
+const pomo = {
+  mode:'focus', dur:{focus:25, short:5, long:15},
+  remaining:25*60, running:false, endTs:0,
+  sessions:0, focusMinutes:0, audio:null
+};
+const POMO_LABELS = { focus:'Concentration', short:'Pause courte', long:'Pause longue' };
+const POMO_CIRC = 628.32;
+
+function pomoFmt(sec){
+  const m = Math.floor(sec/60), r = sec%60;
+  return String(m).padStart(2,'0') + ':' + String(r).padStart(2,'0');
+}
+function pomoRender(){
+  const total = pomo.dur[pomo.mode]*60;
+  document.getElementById('pomoTime').textContent = pomoFmt(pomo.remaining);
+  document.getElementById('pomoLabel').textContent = POMO_LABELS[pomo.mode];
+  const frac = total ? pomo.remaining/total : 0;
+  document.getElementById('pomoProg').style.strokeDashoffset = String(POMO_CIRC * (1 - frac));
+  const card = document.getElementById('pomoCard');
+  card.className = 'pomo-card' + (pomo.mode==='focus' ? '' : ' ' + pomo.mode);
+  document.querySelectorAll('.pomo-mode').forEach(b=>b.classList.toggle('active', b.dataset.pomoMode===pomo.mode));
+  document.getElementById('pomoStart').textContent = pomo.running ? '⏸ Pause' : (pomo.remaining < total ? '▶ Reprendre' : '▶ Démarrer');
+  const dots = document.querySelectorAll('#pomoDots i');
+  const done = pomo.sessions % 4;
+  dots.forEach((d,i)=>d.classList.toggle('on', i < done || (pomo.sessions>0 && done===0 && pomo.mode==='long')));
+  document.getElementById('pomoStats').textContent = pomo.sessions
+    ? pomo.sessions + ' session' + (pomo.sessions>1?'s':'') + ' terminée' + (pomo.sessions>1?'s':'') + ' · ' + pomo.focusMinutes + ' min de concentration'
+    : 'Aucune session terminée pour l\'instant.';
+  document.title = pomo.running ? '⏱ ' + pomoFmt(pomo.remaining) + ' — ' + POMO_LABELS[pomo.mode] : BASE_TITLE;
+}
+function pomoSetMode(mode){
+  pomo.mode = mode; pomo.running = false; pomo.remaining = pomo.dur[mode]*60;
+  pomoRender();
+}
+function pomoBeep(){
+  if(!document.getElementById('pomoSound').checked) return;
+  try{
+    const ac = pomo.audio; if(!ac) return;
+    [0,0.28,0.56].forEach(t=>{
+      const o = ac.createOscillator(), g = ac.createGain();
+      o.type = 'sine'; o.frequency.value = 880;
+      o.connect(g); g.connect(ac.destination);
+      g.gain.setValueAtTime(0.0001, ac.currentTime+t);
+      g.gain.exponentialRampToValueAtTime(0.25, ac.currentTime+t+0.03);
+      g.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime+t+0.22);
+      o.start(ac.currentTime+t); o.stop(ac.currentTime+t+0.25);
+    });
+  }catch(e){}
+  try{ if(navigator.vibrate) navigator.vibrate([200,100,200]); }catch(e){}
+}
+function pomoComplete(){
+  pomoBeep();
+  const wasFocus = pomo.mode === 'focus';
+  if(wasFocus){ pomo.sessions++; pomo.focusMinutes += pomo.dur.focus; }
+  const next = wasFocus ? (pomo.sessions % 4 === 0 ? 'long' : 'short') : 'focus';
+  showToast(wasFocus ? 'Session terminée ! Place à la pause 🎉' : 'Pause terminée, on repart ! 💪');
+  const auto = document.getElementById('pomoAuto').checked;
+  pomoSetMode(next);
+  if(auto) pomoStart();
+}
+function pomoStart(){
+  if(!pomo.audio){ try{ pomo.audio = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} }
+  if(pomo.audio && pomo.audio.state === 'suspended'){ pomo.audio.resume(); }
+  pomo.running = true;
+  pomo.endTs = Date.now() + pomo.remaining*1000;
+  pomoRender();
+}
+function pomoPause(){
+  pomo.remaining = Math.max(0, Math.ceil((pomo.endTs - Date.now())/1000));
+  pomo.running = false;
+  pomoRender();
+}
+setInterval(()=>{
+  if(!pomo.running) return;
+  const left = Math.ceil((pomo.endTs - Date.now())/1000);
+  if(left <= 0){ pomo.remaining = 0; pomoComplete(); return; }
+  if(left !== pomo.remaining){ pomo.remaining = left; pomoRender(); }
+}, 250);
+
+document.getElementById('pomoStart').addEventListener('click', ()=>{ pomo.running ? pomoPause() : pomoStart(); });
+document.getElementById('pomoReset').addEventListener('click', ()=>pomoSetMode(pomo.mode));
+document.getElementById('pomoSkip').addEventListener('click', ()=>{
+  const next = pomo.mode === 'focus' ? ((pomo.sessions+1) % 4 === 0 ? 'long' : 'short') : 'focus';
+  pomoSetMode(next);
+});
+document.getElementById('pomoModes').addEventListener('click', (e)=>{
+  const b = e.target.closest('[data-pomo-mode]');
+  if(b) pomoSetMode(b.dataset.pomoMode);
+});
+[['pomoFocusMin','focus',120],['pomoShortMin','short',60],['pomoLongMin','long',90]].forEach(([id,key,max])=>{
+  document.getElementById(id).addEventListener('change', (e)=>{
+    let v = parseInt(e.target.value,10);
+    if(isNaN(v) || v < 1) v = 1;
+    if(v > max) v = max;
+    e.target.value = v;
+    pomo.dur[key] = v;
+    if(!pomo.running && pomo.mode === key){ pomo.remaining = v*60; }
+    pomoRender();
+  });
+});
+function renderPomodoroSubjects(){
+  const sel = document.getElementById('pomoSubject');
+  if(!sel) return;
+  const prev = sel.value;
+  sel.innerHTML = '<option value="">Choisir une matière…</option>' + subjects.map(s=>`<option value="${escapeHtml(s.id)}">${escapeHtml(s.name)}</option>`).join('');
+  if(prev && subjects.some(s=>s.id===prev)) sel.value = prev;
+}
+pomoRender();
 
 /* ============ INIT ============
    On affiche d'abord le contenu local immédiatement (rapide), puis on se
