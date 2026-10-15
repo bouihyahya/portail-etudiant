@@ -226,6 +226,8 @@
   .pomo-steps b{color:var(--navy-deep);}
   .pomo-study{font-size:13px;color:var(--ink-soft);margin-bottom:16px;display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;}
   .pomo-study select{padding:7px 10px;border:1px solid var(--line);border-radius:8px;font-size:13px;max-width:100%;}
+  .site-badge{display:inline-block;font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;background:#DCEFEA;color:#1E7F72;}
+  .site-badge.annexe{background:#F5E1D6;color:#B4562F;}
   .type-badge{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.04em;padding:3px 9px;border-radius:999px;background:var(--blue-soft);color:var(--blue);}
   .type-badge.td{background:var(--gold-soft);color:#7a5d00;}
   .danger-zone{border-color:#F0C9CB;}
@@ -573,6 +575,8 @@
           <div class="field"><label for="schGroup">Groupe</label><input type="text" id="schGroup" placeholder="ex. B"></div>
           <div class="field"><label for="schRoom">Salle / Amphi</label><input type="text" id="schRoom" placeholder="ex. Amphi 8"></div>
         </div>
+        <div class="field"><label for="schSite">Lieu</label>
+            <select id="schSite"><option value="Siège">Siège (Faculté)</option><option value="Annexe">Annexe</option></select></div>
         <div class="field">
           <label for="schDay">Jour</label>
             <select id="schDay">
@@ -596,6 +600,8 @@
           <div class="field"><label for="tdGroup">Groupe</label><input type="text" id="tdGroup" placeholder="ex. B1"></div>
           <div class="field"><label for="tdRoom">Salle</label><input type="text" id="tdRoom" placeholder="ex. Salle 12"></div>
         </div>
+        <div class="field"><label for="tdSite">Lieu</label>
+            <select id="tdSite"><option value="Siège">Siège (Faculté)</option><option value="Annexe">Annexe</option></select></div>
         <div class="field">
           <label for="tdDay">Jour</label>
           <select id="tdDay">
@@ -733,19 +739,19 @@ function newsIcon(tag){ return NEWS_ICONS[tag] || "📰"; }
 
 let subjects = [
   { id:"probabilite", code:"PROB101", name:"Probabilité", desc:"Lois de probabilité, variables aléatoires et applications statistiques.", videos:[], docs:[],
-    schedule:{ prof:"El Ouazzani Sidi Yahia", group:"B", day:"Lundi", room:"Amphi 2", start:"16:00", end:"18:00" } },
+    schedule:{ prof:"El Ouazzani Sidi Yahia", group:"B", site:"Siège", day:"Lundi", room:"Amphi 2", start:"16:00", end:"18:00" } },
   { id:"eco-maroc", code:"ECO-MA", name:"Économie du Maroc", desc:"Structures économiques, politiques publiques et enjeux de développement du pays.", videos:[], docs:[],
-    schedule:{ prof:"Bakkali Jihane", group:"B", day:"Lundi", room:"Salle 11", start:"14:00", end:"16:00" } },
+    schedule:{ prof:"Bakkali Jihane", group:"B", site:"Siège", day:"Lundi", room:"Salle 11", start:"14:00", end:"16:00" } },
   { id:"francais", code:"LANG-FR", name:"Langues étrangères : Français", desc:"Expression écrite et orale, communication professionnelle en français.", videos:[], docs:[],
-    schedule:{ prof:"Moumade Jamila", group:"B", day:"Mercredi", room:"Salle 20", start:"14:00", end:"16:00" } },
+    schedule:{ prof:"Moumade Jamila", group:"B", site:"Siège", day:"Mercredi", room:"Salle 20", start:"14:00", end:"16:00" } },
   { id:"management", code:"MNG101", name:"Management des Organisations", desc:"Fonctions, structures et pratiques de management dans l'entreprise.", videos:[], docs:[],
-    schedule:{ prof:"Touzi Badr", group:"B", day:"Jeudi", room:"Amphi 8", start:"12:00", end:"14:00" } },
+    schedule:{ prof:"Touzi Badr", group:"B", site:"Siège", day:"Jeudi", room:"Amphi 8", start:"12:00", end:"14:00" } },
   { id:"sociologie", code:"SOC101", name:"Sociologie des Organisations", desc:"Comportements, pouvoir et dynamiques sociales au sein des organisations.", videos:[], docs:[],
-    schedule:{ prof:"Hasnaoui Rachid", group:"B", day:"Mercredi", room:"Amphi 8", start:"12:00", end:"14:00" } },
+    schedule:{ prof:"Hasnaoui Rachid", group:"B", site:"Siège", day:"Mercredi", room:"Amphi 8", start:"12:00", end:"14:00" } },
   { id:"compta-analytique", code:"CAG101", name:"Comptabilité Analytique de Gestion", desc:"Calcul et analyse des coûts pour la prise de décision en gestion.", videos:[], docs:[],
-    schedule:{ prof:"Boushib Kaoutar", group:"B", day:"Vendredi", room:"Salle 12", start:"14:00", end:"16:00" } },
+    schedule:{ prof:"Boushib Kaoutar", group:"B", site:"Siège", day:"Vendredi", room:"Salle 12", start:"14:00", end:"16:00" } },
   { id:"droit-entreprise", code:"DRT101", name:"Droit de l'Entreprise", desc:"Cadre juridique des affaires, contrats et statut des sociétés.", videos:[], docs:[],
-    schedule:{ prof:"Khater Imad", group:"B", day:"Vendredi", room:"Amphi 4", start:"16:00", end:"18:00" } }
+    schedule:{ prof:"Khater Imad", group:"B", site:"Siège", day:"Vendredi", room:"Amphi 4", start:"16:00", end:"18:00" } }
 ];
 const DEFAULT_SUBJECTS = JSON.parse(JSON.stringify(subjects));
 
@@ -790,6 +796,7 @@ function applyRemoteData(data, fromServer){
       const def = DEFAULT_SUBJECTS.find(d=>d.id===s.id);
       if(def && def.schedule){ s.schedule = { ...def.schedule }; repaired = true; }
     }
+    if(s.schedule && !s.schedule.site){ s.schedule.site = 'Siège'; repaired = true; }
   });
   if((repaired || !hadExam) && fromServer) writeState();
 }
@@ -896,7 +903,7 @@ function showToast(msg){
 function subjectCard(s, index){
   const st = subjectStyle(index);
   const sch = s.schedule;
-  const scheduleLine = sch ? `<div class="subj-schedule">📅 <b>${escapeHtml(sch.day||'')}</b> ${escapeHtml(sch.start||'')}–${escapeHtml(sch.end||'')} · ${escapeHtml(sch.room||'')}</div>` : '';
+  const scheduleLine = sch ? `<div class="subj-schedule">📅 <b>${escapeHtml(sch.day||'')}</b> ${escapeHtml(sch.start||'')}–${escapeHtml(sch.end||'')} · ${escapeHtml(sch.room||'')}${sch.site ? ' · ' + escapeHtml(sch.site) : ''}</div>` : '';
   return `<button class="subject-card" data-open-subject="${escapeHtml(s.id)}" style="--accent:${st.accent};--accent-soft:${st.soft};">
     <span class="subj-arrow">→</span>
     <div class="subj-top">
@@ -960,6 +967,7 @@ function renderScheduleTable(){
       <td><span class="type-badge${type==='TD'?' td':''}">${type}</span></td>
       <td>${escapeHtml(sch.prof || '—')}</td>
       <td>${escapeHtml(sch.group || '—')}</td>
+      <td>${sch.site ? `<span class="site-badge${sch.site==='Annexe'?' annexe':''}">${escapeHtml(sch.site)}</span>` : '—'}</td>
       <td>${escapeHtml(sch.room || '—')}</td>
       <td>${escapeHtml(sch.day || '—')}</td>
       <td class="time-cell">${escapeHtml(sch.start || '—')}</td>
@@ -973,9 +981,9 @@ function renderScheduleTable(){
   }).join('');
   wrap.innerHTML = `<table class="schedule-table">
     <thead><tr>
-      <th>Matière</th><th>Type</th><th>Professeur</th><th>Groupe</th><th>Salle</th><th>Jour</th><th>Début</th><th>Fin</th><th>Durée</th>
+      <th>Matière</th><th>Type</th><th>Professeur</th><th>Groupe</th><th>Lieu</th><th>Salle</th><th>Jour</th><th>Début</th><th>Fin</th><th>Durée</th>
     </tr></thead>
-    <tbody>${rows || '<tr><td colspan="9" style="text-align:center;color:var(--ink-soft);">Aucune matière.</td></tr>'}</tbody>
+    <tbody>${rows || '<tr><td colspan="10" style="text-align:center;color:var(--ink-soft);">Aucune matière.</td></tr>'}</tbody>
   </table>`;
 }
 
@@ -998,6 +1006,7 @@ function renderSubjectDetailContent(id){
       ${x.group ? `<span class="sch-item">👥 <b>Groupe ${escapeHtml(x.group)}</b></span>` : ''}
       <span class="sch-item">📅 <b>${escapeHtml(x.day||'—')}</b></span>
       <span class="sch-item">🕒 <b>${escapeHtml(x.start||'—')} – ${escapeHtml(x.end||'—')}</b></span>
+      <span class="sch-item">🏛 <b>${escapeHtml(x.site||'—')}</b></span>
       <span class="sch-item">📍 <b>${escapeHtml(x.room||'—')}</b></span>
     </div>`;
   const scheduleBar = (sch ? barLine('Cours', sch) : '') + (s.tds || []).map(td=>barLine('TD', td)).join('');
@@ -1155,6 +1164,7 @@ function renderScheduleForm(){
   document.getElementById('schGroup').value = sch.group || '';
   document.getElementById('schDay').value = sch.day || '';
   document.getElementById('schRoom').value = sch.room || '';
+  document.getElementById('schSite').value = sch.site || 'Siège';
   document.getElementById('schStart').value = sch.start || '';
   document.getElementById('schEnd').value = sch.end || '';
 }
@@ -1183,7 +1193,7 @@ function renderTdManageList(){
   const tds = (s && s.tds) || [];
   list.innerHTML = tds.map((t,i)=>`
     <div class="manage-row">
-      <div class="mtext"><b>TD — ${escapeHtml(t.day||'—')} ${escapeHtml(t.start||'')}–${escapeHtml(t.end||'')}</b><span>${escapeHtml(t.prof||'—')}${t.group?' · Groupe '+escapeHtml(t.group):''}${t.room?' · '+escapeHtml(t.room):''}</span></div>
+      <div class="mtext"><b>TD — ${escapeHtml(t.day||'—')} ${escapeHtml(t.start||'')}–${escapeHtml(t.end||'')}</b><span>${escapeHtml(t.prof||'—')}${t.group?' · Groupe '+escapeHtml(t.group):''}${t.room?' · '+escapeHtml(t.room):''}${t.site?' · '+escapeHtml(t.site):''}</span></div>
       <button class="btn-danger" data-del-td="${i}">Supprimer</button>
     </div>`).join('') || `<p style="color:var(--ink-soft);font-size:13px;margin:0;">Aucune séance de TD pour cette matière.</p>`;
 }
@@ -1336,6 +1346,7 @@ document.getElementById('saveScheduleBtn').addEventListener('click', ()=>{
     group: document.getElementById('schGroup').value.trim(),
     day: document.getElementById('schDay').value,
     room: document.getElementById('schRoom').value.trim(),
+    site: document.getElementById('schSite').value,
     start: document.getElementById('schStart').value.trim(),
     end: document.getElementById('schEnd').value.trim()
   };
@@ -1351,6 +1362,7 @@ document.getElementById('addTdBtn').addEventListener('click', ()=>{
     group: document.getElementById('tdGroup').value.trim(),
     day: document.getElementById('tdDay').value,
     room: document.getElementById('tdRoom').value.trim(),
+    site: document.getElementById('tdSite').value,
     start: document.getElementById('tdStart').value.trim(),
     end: document.getElementById('tdEnd').value.trim()
   };
