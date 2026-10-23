@@ -669,6 +669,7 @@
           <label for="scheduleSubject">Matière concernée</label>
           <select id="scheduleSubject"></select>
         </div>
+        <div class="manage-list" id="schCurrent" style="margin-bottom:14px;"></div>
         <div class="field"><label for="schProf">Professeur</label><input type="text" id="schProf" placeholder="ex. Bakkali Jihane"></div>
         <div class="field-row">
           <div class="field"><label for="schGroup">Groupe</label><input type="text" id="schGroup" placeholder="ex. B"></div>
@@ -902,7 +903,7 @@ function applyRemoteData(data, fromServer){
   // puis on renvoie la version corrigée pour que ça reste réglé.
   let repaired = false;
   subjects.forEach(s=>{
-    if(!s.schedule){
+    if(s.schedule === undefined){
       const def = DEFAULT_SUBJECTS.find(d=>d.id===s.id);
       if(def && def.schedule){ s.schedule = { ...def.schedule }; repaired = true; }
     }
@@ -1085,7 +1086,7 @@ function renderScheduleTable(){
       <td>${computeDuration(sch.start, sch.end)}</td>
     </tr>`;
   const rows = subjects.map(s=>{
-    let html = row(s.name, 'Cours', s.schedule || {});
+    let html = s.schedule ? row(s.name, 'Cours', s.schedule) : '';
     (s.tds || []).forEach(td=>{ html += row(s.name, 'TD', td); });
     return html;
   }).join('');
@@ -1270,6 +1271,12 @@ function renderLessonSubjectPicker(){
 function renderScheduleForm(){
   const s = subjects.find(x=>x.id===currentLessonSubjectId);
   const sch = (s && s.schedule) || {};
+  const cur = document.getElementById('schCurrent');
+  if(cur){
+    cur.innerHTML = (s && s.schedule)
+      ? `<div class="manage-row"><div class="mtext"><b>Horaire actuel — ${escapeHtml(sch.day||'—')} ${escapeHtml(sch.start||'')}–${escapeHtml(sch.end||'')}</b><span>${escapeHtml(sch.prof||'—')}${sch.group?' · Groupe '+escapeHtml(sch.group):''}${sch.room?' · '+escapeHtml(sch.room):''}${sch.site?' · '+escapeHtml(sch.site):''}</span></div><button class="btn-danger" data-del-schedule="1">Supprimer l'horaire</button></div>`
+      : `<p class="field-hint" style="margin:0;">Aucun horaire enregistré pour cette matière.</p>`;
+  }
   document.getElementById('schProf').value = sch.prof || '';
   document.getElementById('schGroup').value = sch.group || '';
   document.getElementById('schDay').value = sch.day || '';
@@ -1376,6 +1383,14 @@ document.addEventListener('click', (e)=>{
     showToast('Vidéo supprimée.');
     return;
   }
+  const delSch = e.target.closest('[data-del-schedule]');
+  if(delSch){
+    const s = subjects.find(x=>x.id===currentLessonSubjectId);
+    if(s){ s.schedule = null; }
+    renderScheduleForm(); refreshAllPublic(); writeState();
+    showToast('Horaire supprimé.');
+    return;
+  }
   const delTd = e.target.closest('[data-del-td]');
   if(delTd){
     const s = subjects.find(x=>x.id===currentLessonSubjectId);
@@ -1401,7 +1416,6 @@ document.getElementById('menuToggle').addEventListener('click', ()=>{
 
 const _HASH_B64 = "JDJiJDEwJDl6VjZQeGpyUDluZnRQd0t4LzlMYnV4aGt4NlFKV3BBa3dMV2tvVm45ZWtVbEIyQUIvWmZx";
 const DELEGUE_CODE_HASH = atob(_HASH_B64); 
-let dashboardUnlocked = false;
 
 const lockOverlay = document.getElementById('lockOverlay');
 const lockInput = document.getElementById('lockCodeInput');
@@ -1463,6 +1477,8 @@ document.getElementById('scheduleSubject').addEventListener('change', (e)=>{
 document.getElementById('saveScheduleBtn').addEventListener('click', ()=>{
   const s = subjects.find(x=>x.id===currentLessonSubjectId);
   if(!s){ showToast('Choisissez une matière.'); return; }
+  const _empty = ['schProf','schGroup','schRoom','schStart','schEnd'].every(id=>!document.getElementById(id).value.trim()) && !document.getElementById('schDay').value;
+  if(_empty){ s.schedule = null; renderScheduleForm(); refreshAllPublic(); writeState(); showToast('Horaire supprimé.'); return; }
   s.schedule = {
     prof: document.getElementById('schProf').value.trim(),
     group: document.getElementById('schGroup').value.trim(),
@@ -1472,7 +1488,7 @@ document.getElementById('saveScheduleBtn').addEventListener('click', ()=>{
     start: document.getElementById('schStart').value.trim(),
     end: document.getElementById('schEnd').value.trim()
   };
-  refreshAllPublic(); writeState();
+  renderScheduleForm(); refreshAllPublic(); writeState();
   showToast('Horaire enregistré.');
 });
 
