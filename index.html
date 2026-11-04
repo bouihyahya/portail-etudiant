@@ -322,6 +322,8 @@
   table.schedule-table td{padding:12px 14px;border-bottom:1px solid var(--line);white-space:nowrap;}
   table.schedule-table tr:last-child td{border-bottom:none;}
   table.schedule-table tr:hover td{background:var(--paper);}
+  table.schedule-table tr.day-row td{background:var(--blue-soft);color:var(--blue);font-weight:700;font-size:12px;letter-spacing:.06em;text-transform:uppercase;padding:8px 14px;}
+  table.schedule-table tr.day-row:hover td{background:var(--blue-soft);}
   table.schedule-table td.subj-cell{font-weight:700;color:var(--heading);white-space:normal;min-width:160px;}
   table.schedule-table td.time-cell{font-weight:700;color:var(--blue);}
   .subj-arrow{position:absolute;top:18px;right:18px;color:var(--line);font-size:16px;transition:transform .3s var(--ease), color .3s var(--ease);}
@@ -1085,11 +1087,22 @@ function renderScheduleTable(){
       <td class="time-cell">${escapeHtml(sch.end || '—')}</td>
       <td>${computeDuration(sch.start, sch.end)}</td>
     </tr>`;
-  const rows = subjects.map(s=>{
-    let html = s.schedule ? row(s.name, 'Cours', s.schedule) : '';
-    (s.tds || []).forEach(td=>{ html += row(s.name, 'TD', td); });
-    return html;
-  }).join('');
+  // Emploi du temps trié : lundi → samedi, puis par heure de début.
+  const DAY_ORDER = ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'];
+  const dayIdx = d => { const i = DAY_ORDER.indexOf(d); return i < 0 ? 99 : i; };
+  const toMin = t => { const m = /^(\d{1,2}):(\d{2})$/.exec(String(t||'').trim()); return m ? (+m[1])*60 + (+m[2]) : 9999; };
+  const entries = [];
+  subjects.forEach(s=>{
+    if(s.schedule) entries.push({ name:s.name, type:'Cours', sch:s.schedule });
+    (s.tds || []).forEach(td=> entries.push({ name:s.name, type:'TD', sch:td }));
+  });
+  entries.sort((a,b)=> dayIdx(a.sch.day) - dayIdx(b.sch.day) || toMin(a.sch.start) - toMin(b.sch.start) || a.name.localeCompare(b.name, 'fr'));
+  let rows = '', lastDay = null;
+  entries.forEach(e=>{
+    const d = e.sch.day || 'Sans jour';
+    if(d !== lastDay){ rows += `<tr class="day-row"><td colspan="10">${escapeHtml(d)}</td></tr>`; lastDay = d; }
+    rows += row(e.name, e.type, e.sch);
+  });
   wrap.innerHTML = `<table class="schedule-table">
     <thead><tr>
       <th>Matière</th><th>Type</th><th>Professeur</th><th>Groupe</th><th>Lieu</th><th>Salle</th><th>Jour</th><th>Début</th><th>Fin</th><th>Durée</th>
@@ -1415,7 +1428,7 @@ document.getElementById('menuToggle').addEventListener('click', ()=>{
 
 
 const _HASH_B64 = "JDJiJDEwJDl6VjZQeGpyUDluZnRQd0t4LzlMYnV4aGt4NlFKV3BBa3dMV2tvVm45ZWtVbEIyQUIvWmZx";
-const DELEGUE_CODE_HASH = atob(_HASH_B64); 
+const DELEGUE_CODE_HASH = atob(_HASH_B64);
 let dashboardUnlocked = false;
 
 const lockOverlay = document.getElementById('lockOverlay');
@@ -1936,3 +1949,4 @@ observeReveals();
 
 </body>
 </html>
+
