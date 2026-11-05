@@ -6,7 +6,7 @@
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script>(function(){var t='light';try{if(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)t='dark';}catch(e){}document.documentElement.setAttribute('data-theme',t);})();</script>
-<title>Portail du Groupe — Ressources & Actualités</title>
+<title>Portail des groupes A et B — Ressources & Actualités</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23132242'/%3E%3Cpath d='M32 12 L59 25 L32 38 L5 25 Z' fill='%23E7BB3C'/%3E%3Cpath d='M17 29 v9 c0 4.5 6.7 8.5 15 8.5 s15 -4 15 -8.5 v-9' stroke='%23E7BB3C' stroke-width='3.4' fill='none' stroke-linecap='round'/%3E%3Cline x1='55' y1='25' x2='55' y2='43' stroke='%23E7BB3C' stroke-width='3.4' stroke-linecap='round'/%3E%3Ccircle cx='55' cy='46.5' r='2.6' fill='%23E7BB3C'/%3E%3C/svg%3E">
 <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23132242'/%3E%3Cpath d='M32 12 L59 25 L32 38 L5 25 Z' fill='%23E7BB3C'/%3E%3Cpath d='M17 29 v9 c0 4.5 6.7 8.5 15 8.5 s15 -4 15 -8.5 v-9' stroke='%23E7BB3C' stroke-width='3.4' fill='none' stroke-linecap='round'/%3E%3Cline x1='55' y1='25' x2='55' y2='43' stroke='%23E7BB3C' stroke-width='3.4' stroke-linecap='round'/%3E%3Ccircle cx='55' cy='46.5' r='2.6' fill='%23E7BB3C'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -306,6 +306,25 @@
   html[data-theme="dark"] .site-badge.annexe{background:#3D2616;color:#F0A67A;}
   html[data-theme="dark"] .subject-card .subj-icon{background:rgba(255,255,255,.08);}
   html[data-theme="dark"] .news-item:hover{border-color:#3B4A6E;}
+
+  body:not(.in-group) .group-only{display:none !important;}
+  .auth-wrap{min-height:62vh;display:flex;align-items:center;justify-content:center;padding:40px 0;}
+  .pick-box{width:min(560px,100%);background:var(--card);border:1px solid var(--line);border-radius:22px;padding:36px 28px;text-align:center;box-shadow:var(--shadow-md);}
+  .auth-logo{width:54px;height:54px;border-radius:14px;margin:0 auto 14px;background:linear-gradient(135deg,var(--gold-bright),var(--gold));display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-weight:700;font-size:22px;color:var(--navy-deep);}
+  .pick-box h1{font-size:28px;margin-bottom:10px;}
+  .pick-box p{font-size:14px;color:var(--ink-soft);margin:0 0 22px;}
+  .pick-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:6px;}
+  .pick-card{display:flex;flex-direction:column;align-items:center;gap:6px;padding:24px 10px;border-radius:18px;border:1px solid var(--line);background:var(--paper);color:var(--ink);transition:transform .25s var(--ease), box-shadow .25s var(--ease), border-color .25s;}
+  .pick-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-md);border-color:var(--gold);}
+  .pick-card:active{transform:scale(.98);}
+  .pick-letter{font-family:'Fraunces',serif;font-size:54px;font-weight:700;line-height:1;color:var(--heading);}
+  .pick-name{font-size:14px;font-weight:700;color:var(--ink-soft);}
+  .pick-box p.pick-note{font-size:12px;margin:20px 0 0;}
+  .group-btn{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.22);color:#fff;padding:8px 14px;border-radius:999px;font-size:13px;font-weight:700;flex:0 0 auto;white-space:nowrap;transition:background .2s;}
+  .group-btn:hover{background:rgba(255,255,255,.2);}
+  .brand .sub{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  @media (max-width:720px){.group-btn{padding:0 10px;height:38px;font-size:12px;}}
+  @media (max-width:720px){body.in-group .brand .txt{display:none;}}
   .site-badge{display:inline-block;font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;background:#DCEFEA;color:#1E7F72;}
   .site-badge.annexe{background:#F5E1D6;color:#B4562F;}
   .type-badge{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.04em;padding:3px 9px;border-radius:999px;background:var(--blue-soft);color:var(--blue);}
@@ -454,7 +473,7 @@
 </head>
 <body>
 
-<div class="ticker-bar">
+<div class="ticker-bar group-only">
   <div class="ticker-label"><span class="live-dot"></span>ACTUS</div>
   <div class="ticker-track-wrap"><div class="ticker-track" id="tickerTrack"></div></div>
 </div>
@@ -463,14 +482,15 @@
   <div class="brand">
     <span class="logo-dot">PG</span>
     <span class="txt">
-      <span class="mark">Portail du Groupe</span>
-      <span class="sub">Faculté — L2 Sciences</span>
+      <span class="mark">Portail des groupes</span>
+      <span class="sub" id="brandSub">Choisissez votre groupe</span>
     </span>
   </div>
-  <button class="search-btn" id="searchBtn" aria-label="Rechercher une matière ou un document">🔍 <span class="lbl">Rechercher</span> <kbd>Ctrl K</kbd></button>
+  <button class="search-btn group-only" id="searchBtn" aria-label="Rechercher une matière ou un document">🔍 <span class="lbl">Rechercher</span> <kbd>Ctrl K</kbd></button>
+  <button class="group-btn group-only" id="groupBtn" aria-label="Changer de groupe">⇄ Groupe</button>
   <button class="theme-btn" id="themeBtn" aria-label="Passer en mode sombre" title="Mode sombre">🌙</button>
-  <button class="menu-toggle" id="menuToggle" aria-label="Ouvrir le menu">☰</button>
-  <nav class="site-nav" id="siteNav">
+  <button class="menu-toggle group-only" id="menuToggle" aria-label="Ouvrir le menu">☰</button>
+  <nav class="site-nav group-only" id="siteNav">
     <button data-nav="home" class="active">Accueil</button>
     <button data-nav="subjects-full">Matières</button>
     <button data-nav="schedule-full">Emploi du temps</button>
@@ -480,16 +500,37 @@
   </nav>
 </header>
 
-<div class="cd-mini" id="examMini" role="timer" style="display:none;"></div>
+<div class="cd-mini group-only" id="examMini" role="timer" style="display:none;"></div>
 
 <main>
 
   <!-- ===== ACCUEIL ===== -->
-  <section class="page active" id="page-home">
+  <!-- ===== CHARGEMENT ===== -->
+  <section class="page active" id="page-loading">
+    <div class="auth-wrap"><div class="pick-box"><div class="auth-logo">PG</div><p style="margin:0;color:var(--ink-soft);">⏳ Chargement…</p></div></div>
+  </section>
+
+  <!-- ===== CHOIX DU GROUPE ===== -->
+  <section class="page" id="page-groups">
+    <div class="auth-wrap">
+      <div class="pick-box">
+        <div class="auth-logo">PG</div>
+        <h1>Portail des groupes</h1>
+        <p>Choisissez votre groupe pour accéder aux cours, à l'emploi du temps et aux actualités.</p>
+        <div class="pick-grid">
+          <button class="pick-card" data-pick-group="a"><span class="pick-letter">A</span><span class="pick-name">Groupe A</span></button>
+          <button class="pick-card" data-pick-group="b"><span class="pick-letter">B</span><span class="pick-name">Groupe B</span></button>
+        </div>
+        <p class="pick-note">Astuce : ajoutez le lien de votre groupe à vos favoris pour l'ouvrir directement.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="page" id="page-home">
     <div class="hero reveal">
       <div class="hero-inner">
         <div>
-          <span class="hero-eyebrow">Espace de la promo</span>
+          <span class="hero-eyebrow" id="heroEyebrow">Espace de la promo</span>
           <h1>Toutes les ressources du groupe, au même endroit.</h1>
           <p>Cours vidéo, documents de synthèse et actualités classés par matière — mis à jour par les délégués du groupe.</p>
         </div>
@@ -605,7 +646,7 @@
 
   <!-- ===== TABLEAU DE BORD ===== -->
   <section class="page" id="page-dashboard">
-    <div class="section-head" style="margin-top:32px;margin-bottom:6px;"><h2>Tableau de bord</h2></div>
+    <div class="section-head" style="margin-top:32px;margin-bottom:6px;"><h2 id="dashTitle">Tableau de bord</h2></div>
     <p class="dash-intro">
       Espace réservé — non visible ni accessible depuis le menu public. Vos ajouts sont désormais
       <b>partagés instantanément avec tous les visiteurs du site</b> grâce à une base de données en ligne — plus besoin
@@ -776,13 +817,13 @@
 
 <footer>
   Portail réalisé par et pour le groupe.
-  <button id="adminLink" class="login-link">🔒 Connexion</button>
+  <button id="adminLink" class="login-link group-only">🔒 Connexion</button>
 </footer>
 
 <div class="lock-overlay" id="lockOverlay">
   <div class="lock-box">
     <h3>Accès réservé</h3>
-    <p>Entrez le code délégué pour accéder au tableau de bord.</p>
+    <p>Entrez le code délégué du <b id="lockGroupName">groupe</b> pour accéder au tableau de bord.</p>
     <input type="password" id="lockCodeInput" placeholder="Code d'accès" autocomplete="off">
     <p class="lock-error" id="lockError" style="display:none;">Code incorrect, réessayez.</p>
     <div class="btn-row">
@@ -808,36 +849,35 @@
 <script type="module">
 /* ============ FIREBASE (base de données partagée) ============
    Chargé dynamiquement et protégé par try/catch : si Firebase ne peut pas
-   se charger (aperçu restreint, réseau bloqué...), le site continue de
-   fonctionner normalement en mode local au lieu de rester vide.
-   ⚠️ La config ci-dessous est encodée pour ne pas s'afficher en clair au
-   premier coup d'œil (View Source), mais reste techniquement visible par
-   quiconque ouvre les outils de développeur — ce n'est pas un vrai secret,
-   Firebase ne le considère d'ailleurs pas comme sensible : la vraie
-   protection vient des règles Firestore. */
+   se charger, le site continue de fonctionner en mode local au lieu de rester vide.
+   La config n'est pas un secret : la vraie protection vient des règles Firestore. */
 const _CFG_B64 = "eyJhcGlLZXkiOiJBSXphU3lDLUt3aXg5elJHZ2lmdVZKUUowSVJqYVoxUlI3bkZEM0UiLCJhdXRoRG9tYWluIjoicG9ydGFpbC1ldHVkaWFudC0yYjgxNi5maXJlYmFzZWFwcC5jb20iLCJwcm9qZWN0SWQiOiJwb3J0YWlsLWV0dWRpYW50LTJiODE2Iiwic3RvcmFnZUJ1Y2tldCI6InBvcnRhaWwtZXR1ZGlhbnQtMmI4MTYuZmlyZWJhc2VzdG9yYWdlLmFwcCIsIm1lc3NhZ2luZ1NlbmRlcklkIjoiMjkzNDc0MDM4ODU3IiwiYXBwSWQiOiIxOjI5MzQ3NDAzODg1Nzp3ZWI6ZjZlZmNmZjdjMmNhODEyM2Y1M2I5OCJ9";
 const firebaseConfig = JSON.parse(atob(_CFG_B64));
-let dbSetDoc = null, dbOnSnapshot = null, portailDocRef = null, portailBackupRef = null;
-let fbAvailable = false, firestoreReady = false;
-let serverLoaded = false;   // vrai seulement après une lecture CONFIRMÉE par le serveur
-let lastRemoteData = null;  // dernière version connue côté serveur (pour la sauvegarde)
+let fb = null, fbAvailable = false;
 
 async function initFirebase(){
   try{
     const appMod = await import("https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js");
     const fsMod = await import("https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js");
-    const fbApp = appMod.initializeApp(firebaseConfig);
-    const db = fsMod.getFirestore(fbApp);
-    portailDocRef = fsMod.doc(db, "portail", "data");
-    portailBackupRef = fsMod.doc(db, "portail", "backup");
-    dbSetDoc = fsMod.setDoc;
-    dbOnSnapshot = fsMod.onSnapshot;
+    const app = appMod.initializeApp(firebaseConfig);
+    fb = { fs: fsMod, db: fsMod.getFirestore(app) };
     fbAvailable = true;
   }catch(err){
     fbAvailable = false;
   }
 }
-/* ============ DONNÉES (état en mémoire) ============ */
+
+/* ============ LES DEUX GROUPES ============
+   Chaque groupe a son propre document Firestore (portail/groupeA, portail/groupeB),
+   sa propre copie de secours et son propre code délégué (haché, bcrypt). */
+const GROUPS = {
+  a: { id:'a', label:'Groupe A', doc:'groupeA', backup:'backupA',
+       hash:'JDJiJDEwJEFzS05temw0aldYbzI0eHU1SGw1Ry5LYVNCTkZDbVpHRVpLMzRIejN6VG9YRm90MXdTeE1T' },
+  b: { id:'b', label:'Groupe B', doc:'groupeB', backup:'backupB',
+       hash:'JDJiJDEwJDl6VjZQeGpyUDluZnRQd0t4LzlMYnV4aGt4NlFKV3BBa3dMV2tvVm45ZWtVbEIyQUIvWmZx' }
+};
+
+/* ============ DONNÉES (état en mémoire, propre au groupe ouvert) ============ */
 const ICON_PALETTE = [
   {icon:"🎲", accent:"#2F5DA8", soft:"#DCE6F5"},
   {icon:"📈", accent:"#1E7F72", soft:"#DCEFEA"},
@@ -850,7 +890,8 @@ const ICON_PALETTE = [
 const NEWS_ICONS = { "Urgent":"❗", "Cours":"📘", "Réunion":"🗓️", "Rentrée":"🎓", "Rattrapage":"🔁" };
 function newsIcon(tag){ return NEWS_ICONS[tag] || "📰"; }
 
-let subjects = [
+/* Matières de départ (mêmes modules pour les deux groupes) */
+const DEFAULT_SUBJECTS = [
   { id:"probabilite", code:"PROB101", name:"Probabilité", desc:"Lois de probabilité, variables aléatoires et applications statistiques.", videos:[], docs:[],
     schedule:{ prof:"El Ouazzani Sidi Yahia", group:"B", site:"Siège", day:"Lundi", room:"Amphi 2", start:"16:00", end:"18:00" } },
   { id:"eco-maroc", code:"ECO-MA", name:"Économie du Maroc", desc:"Structures économiques, politiques publiques et enjeux de développement du pays.", videos:[], docs:[],
@@ -866,52 +907,62 @@ let subjects = [
   { id:"droit-entreprise", code:"DRT101", name:"Droit de l'Entreprise", desc:"Cadre juridique des affaires, contrats et statut des sociétés.", videos:[], docs:[],
     schedule:{ prof:"Khater Imad", group:"B", site:"Siège", day:"Vendredi", room:"Amphi 4", start:"16:00", end:"18:00" } }
 ];
-const DEFAULT_SUBJECTS = JSON.parse(JSON.stringify(subjects));
-
-let news = [
-  { id:1, date:"09 sept.", tag:"Urgent", urgent:true, title:"Report de l'examen d'Algorithmique au 15 octobre", desc:"L'examen prévu le 10 octobre est déplacé au 15 octobre, même salle et même horaire." },
-  { id:2, date:"08 sept.", tag:"Cours", urgent:false, title:"Nouveau support ajouté pour Bases de Données", desc:"Le cahier de requêtes SQL est maintenant disponible dans la section Bases de Données." },
-  { id:3, date:"06 sept.", tag:"Réunion", urgent:false, title:"Réunion du groupe ce vendredi à 14h", desc:"Ordre du jour : organisation des révisions et répartition des résumés de cours." },
-  { id:4, date:"03 sept.", tag:"Rentrée", urgent:false, title:"Rentrée du second semestre le 20 octobre", desc:"L'emploi du temps définitif sera partagé une semaine avant la reprise." },
-  { id:5, date:"01 sept.", tag:"Rattrapage", urgent:false, title:"Vidéo de rattrapage disponible — Physique, chapitre 3", desc:"Pour les personnes absentes à la séance du 28 août, la vidéo est en ligne." },
-  { id:6, date:"29 août", tag:"Cours", urgent:false, title:"Fiches résumées d'Analyse mathématique mises à jour", desc:"Les fiches couvrent désormais les chapitres 1 à 3 avec exemples corrigés." }
-];
-
-let newsIdCounter = 7;
 const DEFAULT_EXAM = { title:"Examens du semestre", start:"2026-12-21", end:"2026-12-29" };
-let exam = { ...DEFAULT_EXAM };
-let currentSubjectDetail = null;
-let currentLessonSubjectId = subjects[0] ? subjects[0].id : null;
+const emptyExam = () => ({ title:"Examens", start:"", end:"" });
+/* Contenu initial d'un groupe : le groupe B garde les horaires déjà saisis,
+   le groupe A démarre avec les mêmes matières mais sans horaire (à renseigner). */
+function starterContent(gk){
+  const subs = JSON.parse(JSON.stringify(DEFAULT_SUBJECTS));
+  if(gk !== 'b') subs.forEach(s=>{ s.schedule = null; s.tds = []; });
+  return { subjects: subs, news: [], newsIdCounter: 1, exam: { ...DEFAULT_EXAM } };
+}
 
-/* ============ SYNCHRONISATION EN TEMPS RÉEL ============
-   Toutes les données (matières, vidéos, documents, actualités) vivent dans
-   un seul document Firestore, partagé par tous les visiteurs. onSnapshot
-   écoute en continu : dès qu'une personne modifie quelque chose, tout le
-   monde reçoit la mise à jour automatiquement, sans recharger la page. */
-function applyRemoteData(data, fromServer){
-  lastRemoteData = JSON.parse(JSON.stringify(data));
-  subjects = data.subjects || subjects;
-  news = data.news || news;
-  newsIdCounter = data.newsIdCounter || newsIdCounter;
-  const hadExam = !!(data.exam && data.exam.start && data.exam.end);
-  if(hadExam) exam = data.exam;
+let subjects = [];
+let news = [];
+let newsIdCounter = 1;
+let exam = emptyExam();
+let currentSubjectDetail = null;
+let currentLessonSubjectId = null;
+
+let currentGroup = null;          // l'un des objets de GROUPS
+let groupUnsub = null, groupShown = false;
+let serverLoaded = false;         // vrai seulement après une lecture CONFIRMÉE par le serveur
+let lastRemoteData = null;        // dernière version connue côté serveur (pour la sauvegarde)
+
+function explainError(err){
+  const c = String((err && err.code) || '');
+  if(c.includes('permission-denied')) return "droits insuffisants";
+  if(c.includes('unavailable') || c.includes('network')) return "réseau indisponible";
+  return (err && err.message) ? String(err.message).slice(0, 120) : "erreur inconnue";
+}
+
+/* ============ SYNCHRONISATION EN TEMPS RÉEL DU GROUPE ============ */
+function setContent(c){
+  subjects = Array.isArray(c.subjects) ? c.subjects : [];
+  news = Array.isArray(c.news) ? c.news : [];
+  newsIdCounter = c.newsIdCounter || (news.length + 1);
+  exam = (c.exam && typeof c.exam === 'object' && c.exam.start && c.exam.end)
+    ? { title: c.exam.title || 'Examens', start: c.exam.start, end: c.exam.end }
+    : emptyExam();
   if(!subjects.find(s=>s.id===currentLessonSubjectId)){
     currentLessonSubjectId = subjects[0] ? subjects[0].id : null;
   }
-
-  // Réparation automatique : si une matière reçue n'a pas encore d'horaire
-  // (ancienne donnée enregistrée avant l'ajout de cette fonctionnalité),
-  // on le complète avec les valeurs par défaut connues pour cette matière,
-  // puis on renvoie la version corrigée pour que ça reste réglé.
-  let repaired = false;
-  subjects.forEach(s=>{
-    if(s.schedule === undefined){
-      const def = DEFAULT_SUBJECTS.find(d=>d.id===s.id);
-      if(def && def.schedule){ s.schedule = { ...def.schedule }; repaired = true; }
-    }
-    if(s.schedule && !s.schedule.site){ s.schedule.site = 'Siège'; repaired = true; }
-  });
-  if((repaired || !hadExam) && fromServer) writeState();
+}
+function applyRemoteData(data, fromServer){
+  lastRemoteData = JSON.parse(JSON.stringify(data));
+  setContent(data);
+  // Réparation automatique (groupe B seulement) : horaire absent d'une ancienne donnée.
+  if(currentGroup && currentGroup.id === 'b'){
+    let repaired = false;
+    subjects.forEach(s=>{
+      if(s.schedule === undefined){
+        const def = DEFAULT_SUBJECTS.find(d=>d.id===s.id);
+        if(def && def.schedule){ s.schedule = { ...def.schedule }; repaired = true; }
+      }
+      if(s.schedule && !s.schedule.site){ s.schedule.site = 'Siège'; repaired = true; }
+    });
+    if(repaired && fromServer) writeState();
+  }
 }
 
 function setSyncStatus(state){
@@ -919,10 +970,10 @@ function setSyncStatus(state){
   if(!el) return;
   if(state === 'online'){
     el.style.borderLeftColor = 'var(--green-ok)';
-    el.innerHTML = '🟢 Synchronisation active — vos ajouts sont visibles par tous les visiteurs.';
+    el.innerHTML = '🟢 Synchronisation active — vos ajouts sont visibles par tous les visiteurs de ce groupe.';
   } else if(state === 'offline'){
     el.style.borderLeftColor = 'var(--red-live)';
-    el.innerHTML = '🔴 Hors-ligne — la base de données est inaccessible. Vos ajouts resteront visibles <b>uniquement dans cet onglet</b> et disparaîtront en rechargeant la page. Vérifiez votre connexion internet, ou republiez le fichier le plus récent sur GitHub.';
+    el.innerHTML = '🔴 Hors-ligne — la base de données est inaccessible. Vos ajouts resteront visibles <b>uniquement dans cet onglet</b> et disparaîtront en rechargeant la page.';
   } else {
     el.style.borderLeftColor = 'var(--ink-soft)';
     el.innerHTML = '⏳ Connexion à la base en cours…';
@@ -930,56 +981,108 @@ function setSyncStatus(state){
 }
 
 async function writeState(){
-  if(!fbAvailable) return; // mode local : rien à synchroniser
-  // SÉCURITÉ : on n'écrit JAMAIS tant que le serveur n'a pas confirmé le contenu réel,
-  // sinon on risquerait d'écraser les vraies données par les valeurs par défaut.
+  if(!fbAvailable || !currentGroup) return; // mode local : rien à synchroniser
+  // SÉCURITÉ : on n'écrit JAMAIS tant que le serveur n'a pas confirmé le contenu réel.
   if(!serverLoaded){
     showToast("Synchronisation pas encore prête — réessayez dans quelques secondes.");
     return;
   }
+  // On fige le groupe ET les données AVANT tout "await" : si l'utilisateur change de groupe
+  // pendant l'enregistrement, on n'écrit jamais l'état d'un autre groupe (ni un état vide).
+  const g = currentGroup;
+  const payload = JSON.parse(JSON.stringify({ subjects, news, newsIdCounter, exam }));
+  const backup = lastRemoteData ? { ...lastRemoteData, backedUpAt: Date.now() } : null;
+  const { doc, setDoc } = fb.fs;
   try{
-    // Sauvegarde automatique de la dernière version connue avant d'écraser
-    if(lastRemoteData){
-      await dbSetDoc(portailBackupRef, { ...lastRemoteData, backedUpAt: Date.now() });
-    }
-    await dbSetDoc(portailDocRef, { subjects, news, newsIdCounter, exam });
+    if(backup) await setDoc(doc(fb.db, 'portail', g.backup), backup);
+    await setDoc(doc(fb.db, 'portail', g.doc), payload);
   }catch(err){
     setSyncStatus('offline');
-    showToast("Échec de la synchronisation — vérifiez la connexion.");
+    showToast("Échec de l'enregistrement : " + explainError(err));
   }
 }
 
-function startSync(){
+/* Premier lancement d'un groupe : le groupe B récupère les données de l'ancien site
+   (portail/data) si elles existent, sinon contenu de départ. */
+async function bootstrapGroup(g){
+  let content = starterContent(g.id);
+  if(g.id === 'b'){
+    try{
+      const old = await fb.fs.getDoc(fb.fs.doc(fb.db, 'portail', 'data'));
+      if(old.exists()) content = JSON.parse(JSON.stringify(old.data()));
+    }catch(e){ /* pas d'ancien site : on garde le contenu de départ */ }
+  }
+  setContent(content);
+}
+
+function onGroupData(){
+  if(!groupShown){ groupShown = true; enterGroupUI(); return; }
+  setSyncStatus(serverLoaded ? 'online' : 'loading');
+  refreshAllPublic();
+  if(document.getElementById('page-dashboard').classList.contains('active')) refreshDashboard();
+}
+
+function closeGroup(){
+  if(groupUnsub){ try{ groupUnsub(); }catch(e){} groupUnsub = null; }
+  currentGroup = null; groupShown = false; unlockedGroup = null;
+  subjects = []; news = []; newsIdCounter = 1; exam = emptyExam();
+  currentSubjectDetail = null; currentLessonSubjectId = null;
+  lastRemoteData = null; serverLoaded = false;
+  document.body.classList.remove('in-group');
+  document.getElementById('navDashboardBtn').style.display = 'none';
+  document.getElementById('brandSub').textContent = 'Choisissez votre groupe';
+  try{ history.replaceState(null, '', location.pathname); }catch(e){}
+  updateLoginLink();
+  refreshAllPublic();
+}
+
+function openGroup(gk){
+  const g = GROUPS[gk];
+  if(!g) return;
+  closeGroup();
+  currentGroup = g;
   if(!fbAvailable){
-    setSyncStatus('offline');
-    refreshAllPublic();
-    observeReveals();
+    setContent(starterContent(g.id));          // mode local de secours
+    groupShown = true; enterGroupUI(); setSyncStatus('offline');
     return;
   }
-  dbOnSnapshot(portailDocRef, { includeMetadataChanges: true }, (snap)=>{
+  showPage('loading');
+  const { doc, onSnapshot } = fb.fs;
+  groupUnsub = onSnapshot(doc(fb.db, 'portail', g.doc), { includeMetadataChanges: true }, (snap)=>{
+    if(currentGroup !== g) return;
     const fromServer = !snap.metadata.fromCache;
     if(snap.exists()){
       if(fromServer) serverLoaded = true;
       applyRemoteData(snap.data(), fromServer);
+      onGroupData();
     } else if(fromServer){
       // Le SERVEUR confirme qu'il n'y a aucun document : seulement là on initialise.
       serverLoaded = true;
-      writeState();
-    } else {
-      // Réponse du cache local (peut-être vide à tort) : on attend la réponse du serveur.
-      return;
+      bootstrapGroup(g).then(()=>{
+        if(currentGroup !== g) return;
+        onGroupData();
+        writeState();
+      });
     }
-    firestoreReady = true;
-    setSyncStatus(serverLoaded ? 'online' : 'loading');
-    refreshAllPublic();
-    if(document.getElementById('page-dashboard').classList.contains('active')) refreshDashboard();
-    observeReveals();
+    // sinon : réponse du cache local (peut-être vide à tort) -> on attend le serveur
   }, (err)=>{
-    setSyncStatus('offline');
-    showToast("Connexion à la base indisponible, mode hors-ligne.");
-    refreshAllPublic();
-    observeReveals();
+    if(currentGroup !== g) return;
+    showToast("Impossible de charger le groupe (" + explainError(err) + ").");
+    closeGroup();
+    showPage('groups');
   });
+}
+
+function enterGroupUI(){
+  document.body.classList.add('in-group');
+  document.getElementById('brandSub').textContent = currentGroup.label;
+  document.getElementById('groupBtn').textContent = '⇄ ' + currentGroup.label;
+  try{ history.replaceState(null, '', '?groupe=' + currentGroup.id); }catch(e){}
+  setSyncStatus(serverLoaded ? 'online' : 'offline');
+  updateLoginLink();
+  refreshAllPublic();
+  showPage('home');
+  observeReveals();
 }
 
 function subjectStyle(index){ return ICON_PALETTE[index % ICON_PALETTE.length]; }
@@ -1053,6 +1156,7 @@ function animateCount(el, target){
 }
 
 function renderHome(){
+  const he = document.getElementById('heroEyebrow'); if(he) he.textContent = currentGroup ? currentGroup.label : 'Espace de la promo';
   document.getElementById('subjectListHome').innerHTML = subjects.slice(0,6).map((s,i)=>subjectCard(s,i)).join('');
   document.getElementById('newsListHome').innerHTML = news.slice(0,4).map(n=>newsItem(n,false)).join('');
   const nums = document.querySelectorAll('.hero-stats .num');
@@ -1329,6 +1433,7 @@ function renderTdManageList(){
 }
 
 function refreshDashboard(){
+  document.getElementById('dashTitle').textContent = 'Tableau de bord' + (currentGroup ? ' — ' + currentGroup.label : '');
   renderNewsManageList();
   renderLessonSubjectPicker();
   renderLessonManageList();
@@ -1427,26 +1532,27 @@ document.getElementById('menuToggle').addEventListener('click', ()=>{
 });
 
 
-const _HASH_B64 = "JDJiJDEwJDl6VjZQeGpyUDluZnRQd0t4LzlMYnV4aGt4NlFKV3BBa3dMV2tvVm45ZWtVbEIyQUIvWmZx";
-const DELEGUE_CODE_HASH = atob(_HASH_B64); // hash bcrypt du code délégué
-let dashboardUnlocked = false;
-
+let unlockedGroup = null;
 const lockOverlay = document.getElementById('lockOverlay');
 const lockInput = document.getElementById('lockCodeInput');
 const lockError = document.getElementById('lockError');
+const isUnlocked = () => !!currentGroup && unlockedGroup === currentGroup.id;
 
 function updateLoginLink(){
-  document.getElementById('adminLink').textContent = dashboardUnlocked ? '🔓 Déconnexion' : '🔒 Connexion';
+  const a = document.getElementById('adminLink');
+  if(a) a.textContent = isUnlocked() ? '🔓 Déconnexion' : '🔒 Connexion';
 }
 function logoutDelegue(){
-  dashboardUnlocked = false;
+  unlockedGroup = null;
   document.getElementById('navDashboardBtn').style.display = 'none';
   if(document.getElementById('page-dashboard').classList.contains('active')) showPage('home');
   updateLoginLink();
   showToast('Vous êtes déconnecté.');
 }
 document.getElementById('adminLink').addEventListener('click', ()=>{
-  if(dashboardUnlocked){ logoutDelegue(); return; }
+  if(!currentGroup) return;
+  if(isUnlocked()){ logoutDelegue(); return; }
+  document.getElementById('lockGroupName').textContent = currentGroup.label;
   lockError.style.display = 'none';
   lockInput.value = '';
   lockOverlay.classList.add('show');
@@ -1456,20 +1562,30 @@ document.getElementById('lockCancel').addEventListener('click', ()=> lockOverlay
 lockOverlay.addEventListener('click', (e)=>{ if(e.target === lockOverlay) lockOverlay.classList.remove('show'); });
 
 function tryUnlock(){
-  if(window.bcrypt && bcrypt.compareSync(lockInput.value, DELEGUE_CODE_HASH)){
-    dashboardUnlocked = true;
+  if(currentGroup && window.bcrypt && bcrypt.compareSync(lockInput.value, atob(currentGroup.hash))){
+    unlockedGroup = currentGroup.id;
     updateLoginLink();
     document.getElementById('navDashboardBtn').style.display = '';
     lockOverlay.classList.remove('show');
     showPage('dashboard');
     refreshDashboard();
-    showToast('Accès délégué activé.');
+    showToast('Accès délégué activé — ' + currentGroup.label + '.');
   } else {
     lockError.style.display = 'block';
   }
 }
 document.getElementById('lockSubmit').addEventListener('click', tryUnlock);
 lockInput.addEventListener('keydown', (e)=>{ if(e.key === 'Enter') tryUnlock(); });
+
+/* ---- choix du groupe ---- */
+document.addEventListener('click', (e)=>{
+  const b = e.target.closest('[data-pick-group]');
+  if(b) openGroup(b.dataset.pickGroup);
+});
+document.getElementById('groupBtn').addEventListener('click', ()=>{
+  closeGroup();
+  showPage('groups');
+});
 
 document.getElementById('lessonSubject').addEventListener('change', (e)=>{
   currentLessonSubjectId = e.target.value;
@@ -1935,15 +2051,13 @@ try{
   matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e)=>{ if(!themeChosen) applyTheme(e.matches ? 'dark' : 'light'); });
 }catch(e){}
 
-/* ============ INIT ============
-   On affiche d'abord le contenu local immédiatement (rapide), puis on se
-   connecte à Firebase en arrière-plan et on rafraîchit avec les données
-   partagées dès qu'elles arrivent. */
+/* ============ INIT ============ */
 refreshAllPublic();
-observeReveals();
 (async ()=>{
   await initFirebase();
-  startSync();
+  const wanted = String(new URLSearchParams(location.search).get('groupe') || '').toLowerCase();
+  if(GROUPS[wanted]) openGroup(wanted);
+  else showPage('groups');
 })();
 </script>
 
