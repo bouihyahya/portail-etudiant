@@ -443,6 +443,15 @@
 
   .subject-picker{margin-bottom:18px;}
   .data-io{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0 4px;}
+  .edt-card{margin:14px 0 6px;}
+  .edt-card h3{margin:0 0 8px;}
+  .edt-line{margin:0 0 10px;color:var(--ink-soft);font-size:.95rem;}
+  .edt-log{list-style:none;margin:12px 0 0;padding:0;font-size:.9rem;}
+  .edt-log li{padding:8px 0;border-top:1px solid var(--line);}
+  .edt-log small{display:block;color:var(--ink-soft);margin-bottom:3px;}
+  .edt-log .l{display:block;margin:1px 0;}
+  .edt-public{margin:-6px 0 14px;color:var(--ink-soft);font-size:.9rem;}
+  .row-note{font-size:.78rem;color:var(--ink-soft);font-style:italic;margin-top:2px;}
 
   .toast{
     position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(10px);
@@ -570,6 +579,7 @@
   <!-- ===== EMPLOI DU TEMPS ===== -->
   <section class="page" id="page-schedule-full">
     <div class="section-head" style="margin-top:32px;"><h2>Emploi du temps</h2></div>
+    <p class="edt-public" id="edtPublic"></p>
     <div class="schedule-table-wrap" id="scheduleTableWrap"></div>
   </section>
 
@@ -653,6 +663,17 @@
       d'exporter/importer ni de republier le site. Les boutons ci-dessous restent utiles pour garder une copie de secours.
     </p>
     <p class="dash-intro" id="syncStatus" style="border-left-color:var(--ink-soft);">⏳ Connexion à la base en cours…</p>
+
+    <div class="form-card edt-card" id="edtCard">
+      <h3>📅 Emploi du temps automatique</h3>
+      <p class="edt-line" id="edtStatus">…</p>
+      <div class="checkbox-row"><input type="checkbox" id="edtEnabled"><label for="edtEnabled">Mettre à jour automatiquement depuis le tableau officiel de la faculté</label></div>
+      <div class="data-io" style="margin-top:12px;">
+        <button class="btn-secondary" id="edtNow">🔄 Vérifier maintenant</button>
+        <button class="btn-secondary" id="edtUndo">↩ Annuler la dernière mise à jour</button>
+      </div>
+      <ul class="edt-log" id="edtLog"></ul>
+    </div>
 
     <div class="data-io">
       <button class="btn-secondary" id="exportBtn">⬇ Exporter les données</button>
@@ -921,6 +942,8 @@ let subjects = [];
 let news = [];
 let newsIdCounter = 1;
 let exam = emptyExam();
+let edtSync = { enabled:true, log:[], undo:null };   // état de la synchro automatique (sauvegardé avec le groupe)
+let edtBusy = false, edtTried = false, edtLastCheck = 0, edtError = '';
 let currentSubjectDetail = null;
 let currentLessonSubjectId = null;
 
@@ -944,6 +967,8 @@ function setContent(c){
   exam = (c.exam && typeof c.exam === 'object' && c.exam.start && c.exam.end)
     ? { title: c.exam.title || 'Examens', start: c.exam.start, end: c.exam.end }
     : emptyExam();
+  const e = c.edtSync || {};
+  edtSync = { enabled: e.enabled !== false, log: Array.isArray(e.log) ? e.log : [], undo: e.undo || null };
   if(!subjects.find(s=>s.id===currentLessonSubjectId)){
     currentLessonSubjectId = subjects[0] ? subjects[0].id : null;
   }
@@ -990,7 +1015,7 @@ async function writeState(){
   // On fige le groupe ET les données AVANT tout "await" : si l'utilisateur change de groupe
   // pendant l'enregistrement, on n'écrit jamais l'état d'un autre groupe (ni un état vide).
   const g = currentGroup;
-  const payload = JSON.parse(JSON.stringify({ subjects, news, newsIdCounter, exam }));
+  const payload = JSON.parse(JSON.stringify({ subjects, news, newsIdCounter, exam, edtSync }));
   const backup = lastRemoteData ? { ...lastRemoteData, backedUpAt: Date.now() } : null;
   const { doc, setDoc } = fb.fs;
   try{
@@ -1015,7 +1040,186 @@ async function bootstrapGroup(g){
   setContent(content);
 }
 
+
+/* ============ EMPLOI DU TEMPS AUTOMATIQUE ============
+   Lit le tableau officiel de la faculté (via le Worker, qui relaie le CSV publié),
+   garde les lignes du semestre/groupe, et met à jour matières, cours et TD.
+   Sécurités : rien n'est écrasé si le tableau est vide/illisible, une copie de secours
+   est faite avant chaque écriture, et le délégué peut annuler la dernière mise à jour. */
+const EDT_SOURCE = { filiere:'Tronc commun Gestion', semestre:'S3' };
+const EDT_DAYS = { lundi:'Lundi', mardi:'Mardi', mercredi:'Mercredi', jeudi:'Jeudi', vendredi:'Vendredi', samedi:'Samedi', dimanche:'Dimanche' };
+
+function normTxt(s){ return String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim(); }
+function niceName(s){ return String(s||'').toLowerCase().replace(/(^|[\s\-\/'’])([a-zà-ÿ])/g,(m,a,b)=>a+b.toUpperCase()).replace(/\s+/g,' ').trim(); }
+function normTime(t){ const m = /^(\d{1,2})\s*[:h]\s*(\d{2})$/.exec(String(t||'').trim()); return m ? String(m[1]).padStart(2,'0') + ':' + m[2] : ''; }
+
+function parseCsv(text){
+  const rows = []; let row = [], cell = '', q = false;
+  for(let i=0;i<text.length;i++){
+    const c = text[i];
+    if(q){
+      if(c === '"'){ if(text[i+1] === '"'){ cell += '"'; i++; } else q = false; }
+      else cell += c;
+    } else if(c === '"') q = true;
+    else if(c === ','){ row.push(cell); cell = ''; }
+    else if(c === '\n'){ row.push(cell); rows.push(row); row = []; cell = ''; }
+    else if(c !== '\r') cell += c;
+  }
+  if(cell !== '' || row.length){ row.push(cell); rows.push(row); }
+  return rows;
+}
+
+function parseTimetable(csv, gk){
+  const rows = parseCsv(csv);
+  const hi = rows.findIndex(r => r.some(c=>normTxt(c)==='semestre') && r.some(c=>normTxt(c)==='module'));
+  if(hi < 0) throw new Error("en-têtes du tableau introuvables");
+  const col = {}; rows[hi].forEach((c,i)=>{ col[normTxt(c)] = i; });
+  ['filiere','semestre','module','groupes','jour','debut','fin'].forEach(k=>{ if(col[k] === undefined) throw new Error("colonne manquante : " + k); });
+  const g = (r,k)=> col[k] === undefined ? '' : String(r[col[k]] || '').trim();
+  const key = String(gk).toUpperCase(), items = [], seen = new Set();
+  rows.slice(hi+1).forEach(r=>{
+    if(normTxt(g(r,'semestre')) !== normTxt(EDT_SOURCE.semestre)) return;
+    if(normTxt(g(r,'filiere')) !== normTxt(EDT_SOURCE.filiere)) return;
+    const tokens = g(r,'groupes').toUpperCase().split(/[&,\/+\s]+/).filter(Boolean);
+    if(!tokens.length || !tokens.every(x=>/^[A-Z]\d?$/.test(x)) || !tokens.some(x=>x[0] === key)) return;
+    const rawModule = g(r,'module'), isTd = /^\s*TD\b/i.test(rawModule);
+    const module = rawModule.replace(/^\s*TD\s*:?\s*/i,'').trim();
+    const day = EDT_DAYS[normTxt(g(r,'jour'))], start = normTime(g(r,'debut')), end = normTime(g(r,'fin'));
+    if(!module || !day || !start || !end || end <= start) return;      // ligne incomplète : ignorée
+    const lieu = g(r,'lieu');
+    const avis = g(r,'avis'), dav = g(r,'date d avis');
+    const it = { kind: isTd ? 'TD' : 'Cours', module,
+      prof: niceName(g(r,'responsable du cours')), group: g(r,'groupes').replace(/\s+/g,''),
+      site: /annexe/i.test(lieu) ? 'Annexe' : (/si[eè]ge/i.test(lieu) ? 'Siège' : lieu),
+      room: g(r,'local'), day, start, end, note: avis ? (avis + (dav ? ' (' + dav + ')' : '')) : '' };
+    const sig = [it.kind, normTxt(module), it.group, day, start, end].join('|');
+    if(seen.has(sig)) return; seen.add(sig);
+    items.push(it);
+  });
+  return items;
+}
+
+const entrySig = (name, kind, e)=> [name, kind, e.group||'', e.day||'', e.start||'', e.end||'', e.site||'', e.room||'', e.prof||'', e.note||''].join('|');
+function allEntries(subs){
+  const out = [];
+  subs.forEach(s=>{
+    if(s.schedule) out.push({ sig: entrySig(s.name, 'Cours', s.schedule), name:s.name, kind:'Cours', e:s.schedule });
+    (s.tds || []).forEach(t=> out.push({ sig: entrySig(s.name, t.kind || 'TD', t), name:s.name, kind:t.kind || 'TD', e:t }));
+  });
+  return out;
+}
+const entryText = x => `${x.name} (${x.kind}${x.e.group ? ' ' + x.e.group : ''}) — ${x.e.day} ${x.e.start}–${x.e.end}${x.e.room ? ', ' + x.e.room : ''}${x.e.site ? ' · ' + x.e.site : ''}${x.e.note ? ' [' + x.e.note + ']' : ''}`;
+
+function applyTimetable(items){
+  const beforeJson = JSON.stringify(subjects);
+  const undo = { subs: subjects.map(s=>({ id:s.id, schedule: s.schedule === undefined ? null : s.schedule, tds: s.tds || [] })), created: [] };
+  const before = new Map(allEntries(subjects).map(x=>[x.sig, x]));
+  const modules = new Map();
+  items.forEach(it=>{
+    const k = normTxt(it.module);
+    if(!modules.has(k)) modules.set(k, { module: it.module, courses: [], tds: [] });
+    modules.get(k)[it.kind === 'TD' ? 'tds' : 'courses'].push(it);
+  });
+  const toSched = it => ({ prof: it.prof, group: it.group, site: it.site, room: it.room, day: it.day, start: it.start, end: it.end, note: it.note, auto: true });
+  const touched = new Set();
+  modules.forEach((grp, k)=>{
+    let s = subjects.find(x=>normTxt(x.name) === k)
+         || subjects.find(x=>{ const n = normTxt(x.name); return Math.min(n.length, k.length) >= 8 && (n.includes(k) || k.includes(n)); });
+    if(!s){
+      let id = k.replace(/\s+/g,'-').slice(0,30) || 'matiere', i = 2; const base = id;
+      while(subjects.some(x=>x.id === id)) id = base + '-' + (i++);
+      s = { id, code: k.replace(/\s+/g,'').slice(0,6).toUpperCase(), name: grp.module,
+            desc: "Matière ajoutée automatiquement depuis l'emploi du temps officiel.", videos:[], docs:[], schedule:null, tds:[] };
+      subjects.push(s); undo.created.push(id);
+    }
+    touched.add(s.id);
+    const courses = grp.courses.map(toSched);
+    const main = courses.find(c=>!c.note) || courses[0];
+    if(main) s.schedule = main; else if(s.schedule && s.schedule.auto) s.schedule = null;
+    const extras = courses.filter(c=>c !== main).map(c=>({ ...c, kind:'Cours' }));
+    const fresh = grp.tds.map(toSched).concat(extras);
+    const keep = (s.tds || []).filter(t=> !t.auto && !fresh.some(f=>f.day === t.day && f.start === t.start));
+    s.tds = keep.concat(fresh);
+  });
+  subjects.forEach(s=>{                       // matières qui ont disparu du tableau officiel
+    if(touched.has(s.id)) return;
+    if(s.schedule && s.schedule.auto) s.schedule = null;
+    if(Array.isArray(s.tds)) s.tds = s.tds.filter(t=>!t.auto);
+  });
+  const after = new Map(allEntries(subjects).map(x=>[x.sig, x]));
+  const lines = [];
+  before.forEach((x,sig)=>{ if(!after.has(sig)) lines.push('➖ ' + entryText(x)); });
+  after.forEach((x,sig)=>{ if(!before.has(sig)) lines.push('➕ ' + entryText(x)); });
+  return { dirty: JSON.stringify(subjects) !== beforeJson, lines, undo };
+}
+
+async function runEdtSync(manual){
+  if(edtBusy || !currentGroup) return;
+  if(fbAvailable && !serverLoaded) return;
+  if(!manual && edtSync.enabled === false) return;
+  const g = currentGroup;
+  edtBusy = true; edtError = ''; renderEdtPanel();
+  try{
+    const res = await fetch(ASSISTANT_URL + '/edt?t=' + Date.now());
+    if(!res.ok) throw new Error('relais indisponible (' + res.status + ')');
+    const csv = await res.text();
+    if(currentGroup !== g) return;
+    const items = parseTimetable(csv, g.id);
+    if(items.length < 4) throw new Error('tableau incomplet (' + items.length + ' ligne(s) trouvée(s)) — mise à jour ignorée');
+    edtLastCheck = Date.now();
+    const r = applyTimetable(items);
+    if(r.dirty){
+      if(r.lines.length){
+        edtSync.log.unshift({ t: Date.now(), lines: r.lines.slice(0,14), more: Math.max(0, r.lines.length - 14) });
+        edtSync.log = edtSync.log.slice(0,8);
+        edtSync.undo = r.undo;
+      }
+      refreshAllPublic();
+      if(document.getElementById('page-dashboard').classList.contains('active')) refreshDashboard();
+      await writeState();
+      if(manual || unlockedGroup === g.id) showToast('Emploi du temps mis à jour automatiquement.');
+    } else if(manual){
+      showToast("Emploi du temps déjà à jour.");
+    }
+  }catch(err){
+    edtError = String((err && err.message) || err).slice(0,160);
+    if(manual) showToast("Mise à jour impossible : " + edtError);
+  }finally{
+    edtBusy = false; renderEdtPanel();
+  }
+}
+
+function undoEdt(){
+  const u = edtSync.undo;
+  if(!u) return;
+  u.created.forEach(id=>{ const i = subjects.findIndex(s=>s.id === id); if(i >= 0) subjects.splice(i,1); });
+  u.subs.forEach(x=>{ const s = subjects.find(y=>y.id === x.id); if(s){ s.schedule = x.schedule; s.tds = x.tds; } });
+  edtSync.undo = null; edtSync.enabled = false;
+  edtSync.log.unshift({ t: Date.now(), lines: ["↩ Dernière mise à jour annulée. La mise à jour automatique est désactivée (réactivez-la quand vous voulez)."], more:0 });
+  edtSync.log = edtSync.log.slice(0,8);
+  refreshAllPublic(); refreshDashboard(); writeState();
+  showToast('Mise à jour annulée.');
+}
+
+function fmtDateTime(ts){ try{ return new Date(ts).toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}); }catch(e){ return ''; } }
+function renderEdtPanel(){
+  const st = document.getElementById('edtStatus'); if(!st) return;
+  const last = edtSync.log.find(l=>l.lines.length && !l.lines[0].startsWith('↩'));
+  let s = edtBusy ? '⏳ Vérification du tableau officiel…'
+        : edtError ? '⚠️ Dernière vérification échouée : ' + escapeHtml(edtError) + ' (l\'emploi du temps actuel est conservé).'
+        : edtSync.enabled === false ? '⏸ Désactivée — l\'emploi du temps ne change que si vous le modifiez.'
+        : '🟢 Active — vérifiée à chaque ouverture du site' + (edtLastCheck ? ' (dernière vérification : ' + fmtDateTime(edtLastCheck) + ')' : '') + '.';
+  if(last) s += '<br>Dernière modification : ' + fmtDateTime(last.t) + '.';
+  st.innerHTML = s;
+  document.getElementById('edtEnabled').checked = edtSync.enabled !== false;
+  document.getElementById('edtNow').disabled = edtBusy;
+  document.getElementById('edtUndo').disabled = !edtSync.undo;
+  document.getElementById('edtLog').innerHTML = edtSync.log.map(l=>`<li><small>${escapeHtml(fmtDateTime(l.t))}</small>${l.lines.map(x=>`<span class="l">${escapeHtml(x)}</span>`).join('')}${l.more ? `<span class="l">… et ${l.more} autre(s) changement(s)</span>` : ''}</li>`).join('')
+    || '<li><small>Aucune modification automatique pour le moment.</small></li>';
+}
+
 function onGroupData(){
+  if(serverLoaded && !edtTried){ edtTried = true; setTimeout(()=>runEdtSync(false), 0); }
   if(!groupShown){ groupShown = true; enterGroupUI(); return; }
   setSyncStatus(serverLoaded ? 'online' : 'loading');
   refreshAllPublic();
@@ -1026,6 +1230,7 @@ function closeGroup(){
   if(groupUnsub){ try{ groupUnsub(); }catch(e){} groupUnsub = null; }
   currentGroup = null; groupShown = false; unlockedGroup = null;
   subjects = []; news = []; newsIdCounter = 1; exam = emptyExam();
+  edtSync = { enabled:true, log:[], undo:null }; edtTried = false; edtError = ''; edtLastCheck = 0;
   currentSubjectDetail = null; currentLessonSubjectId = null;
   lastRemoteData = null; serverLoaded = false;
   document.body.classList.remove('in-group');
@@ -1044,6 +1249,7 @@ function openGroup(gk){
   if(!fbAvailable){
     setContent(starterContent(g.id));          // mode local de secours
     groupShown = true; enterGroupUI(); setSyncStatus('offline');
+    edtTried = true; runEdtSync(false);
     return;
   }
   showPage('loading');
@@ -1185,7 +1391,7 @@ function renderScheduleTable(){
       <td>${escapeHtml(sch.prof || '—')}</td>
       <td>${escapeHtml(sch.group || '—')}</td>
       <td>${sch.site ? `<span class="site-badge${sch.site==='Annexe'?' annexe':''}">${escapeHtml(sch.site)}</span>` : '—'}</td>
-      <td>${escapeHtml(sch.room || '—')}</td>
+      <td>${escapeHtml(sch.room || '—')}${sch.note ? `<div class="row-note">${escapeHtml(sch.note)}</div>` : ''}</td>
       <td>${escapeHtml(sch.day || '—')}</td>
       <td class="time-cell">${escapeHtml(sch.start || '—')}</td>
       <td class="time-cell">${escapeHtml(sch.end || '—')}</td>
@@ -1198,7 +1404,7 @@ function renderScheduleTable(){
   const entries = [];
   subjects.forEach(s=>{
     if(s.schedule) entries.push({ name:s.name, type:'Cours', sch:s.schedule });
-    (s.tds || []).forEach(td=> entries.push({ name:s.name, type:'TD', sch:td }));
+    (s.tds || []).forEach(td=> entries.push({ name:s.name, type:td.kind || 'TD', sch:td }));
   });
   entries.sort((a,b)=> dayIdx(a.sch.day) - dayIdx(b.sch.day) || toMin(a.sch.start) - toMin(b.sch.start) || a.name.localeCompare(b.name, 'fr'));
   let rows = '', lastDay = null;
@@ -1207,6 +1413,8 @@ function renderScheduleTable(){
     if(d !== lastDay){ rows += `<tr class="day-row"><td colspan="10">${escapeHtml(d)}</td></tr>`; lastDay = d; }
     rows += row(e.name, e.type, e.sch);
   });
+  const pub = document.getElementById('edtPublic');
+  if(pub) pub.textContent = entries.some(e=>e.sch.auto) ? "🔄 Emploi du temps synchronisé automatiquement avec le tableau officiel de la faculté." : '';
   wrap.innerHTML = `<table class="schedule-table">
     <thead><tr>
       <th>Matière</th><th>Type</th><th>Professeur</th><th>Groupe</th><th>Lieu</th><th>Salle</th><th>Jour</th><th>Début</th><th>Fin</th><th>Durée</th>
@@ -1236,8 +1444,9 @@ function renderSubjectDetailContent(id){
       <span class="sch-item">🕒 <b>${escapeHtml(x.start||'—')} – ${escapeHtml(x.end||'—')}</b></span>
       <span class="sch-item">🏛 <b>${escapeHtml(x.site||'—')}</b></span>
       <span class="sch-item">📍 <b>${escapeHtml(x.room||'—')}</b></span>
+      ${x.note ? `<span class="sch-item">ℹ️ <b>${escapeHtml(x.note)}</b></span>` : ''}
     </div>`;
-  const scheduleBar = (sch ? barLine('Cours', sch) : '') + (s.tds || []).map(td=>barLine('TD', td)).join('');
+  const scheduleBar = (sch ? barLine('Cours', sch) : '') + (s.tds || []).map(td=>barLine(td.kind || 'TD', td)).join('');
   document.getElementById('subjectDetailHeader').innerHTML = `
     <span class="subj-icon">${st.icon}</span>
     <div class="htext">
@@ -1440,6 +1649,7 @@ function refreshDashboard(){
   renderScheduleForm();
   renderTdManageList();
   renderExamForm();
+  renderEdtPanel();
 }
 
 /* ============ SCROLL REVEAL ============ */
@@ -1531,7 +1741,9 @@ document.getElementById('menuToggle').addEventListener('click', ()=>{
   document.getElementById('siteNav').classList.toggle('open');
 });
 
-
+/* ============ ACCÈS DÉLÉGUÉ (un code par groupe, protection basique côté client) ============
+   ⚠️ Ce n'est pas une vraie sécurité : un code haché reste visible dans le fichier du site.
+   Il empêche seulement les visiteurs de tomber sur le tableau de bord par hasard. */
 let unlockedGroup = null;
 const lockOverlay = document.getElementById('lockOverlay');
 const lockInput = document.getElementById('lockCodeInput');
@@ -1710,8 +1922,15 @@ document.getElementById('addLessonBtn').addEventListener('click', ()=>{
 });
 
 /* ============ EXPORT / IMPORT ============ */
+document.getElementById('edtNow').addEventListener('click', ()=> runEdtSync(true));
+document.getElementById('edtUndo').addEventListener('click', ()=>{ if(confirm("Annuler la dernière mise à jour automatique de l'emploi du temps ?")) undoEdt(); });
+document.getElementById('edtEnabled').addEventListener('change', (e)=>{
+  edtSync.enabled = e.target.checked; renderEdtPanel(); writeState();
+  showToast(edtSync.enabled ? 'Mise à jour automatique activée.' : 'Mise à jour automatique désactivée.');
+  if(edtSync.enabled) runEdtSync(true);
+});
 document.getElementById('exportBtn').addEventListener('click', ()=>{
-  const data = JSON.stringify({subjects, news, newsIdCounter, exam}, null, 2);
+  const data = JSON.stringify({subjects, news, newsIdCounter, exam, edtSync}, null, 2);
   const blob = new Blob([data], {type:'application/json'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -2063,4 +2282,3 @@ refreshAllPublic();
 
 </body>
 </html>
-
